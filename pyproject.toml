@@ -1,0 +1,18 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "rinohbox"
+authors = [{name = "Pierre Bernatchez", email = "pierre@bernatchez.net"}]
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"]
+dynamic = ["version", "description"]
+
+[project.urls]
+Home = "http://www.bernatchez.net/index.html"
+
+[project.scripts]
+newrinohbox = "rinohbox.rinohbox:newbox"
+cleanrinohbox = "rinohbox.rinohbox:cleanbox"
+rinohrender = "rinohbox.rinohrender:render"

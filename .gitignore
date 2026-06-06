@@ -1,0 +1,27 @@
+*~
+s3cfg
+\#*\#
+*.whl
+*.gz
+#
+# intermediate / generated fiiles
+#
+*.pdf
+*.incl
+dist/
+dist/*
+__pycache__/
+__pycache__/*
+build/
+build/*
+clutter/
+clutter/*
+node_modules/*
+node_modules/*
+static/
+static/*
+submissions/
+submissions/*
+submissions-media/
+submissions-media/*
+

@@ -1,0 +1,142 @@
+# colordecorations
+strdecor () {
+    
+    case ${1} in
+	
+	black)
+	    echo '\033[30m'
+	    ;;
+	    
+        red)
+	    echo '\033[31m'
+	    ;;
+
+        yellow)
+	    echo '\033[33m'
+	    ;;
+		      
+        white)
+	    echo '\033[37m'
+	    ;;
+
+        reset)
+	    echo '\033[0m'
+	    ;;
+
+        bold)
+	    echo '\033[1m'
+	    ;;
+
+        dim)
+	    echo '\033[2m'
+	    ;;
+
+        underline)
+	    echo '\033[4m'
+	    ;;
+
+        green)
+	    echo '\033[32m'
+	    ;;
+
+        blue)
+	    echo '\033[34m'
+	    ;;
+
+        magenta)
+	    echo '\033[35m'
+	    ;;
+
+        cyan)
+	    echo '\033[36m'
+	    ;;
+
+	*)
+	    echo 'UH OH:' ${1}
+    esac
+}
+
+fatal () {
+    local bold=$(strdecor "bold")
+    local reset=$(strdecor "reset")
+    local mycolor=$(strdecor "red")
+    echo -e "${bold}${mycolor}${@}${reset}"
+}
+
+warning () {
+    local bold=$(strdecor "bold")
+    local reset=$(strdecor "reset")
+    local mycolor=$(strdecor "yellow")
+    echo -e "${bold}${mycolor}${@}${reset}"
+}
+
+inform () {
+    local bold=$(strdecor "bold")
+    local reset=$(strdecor "reset")
+    local mycolor=$(strdecor "cyan")
+    echo -e "${bold}${mycolor}${@}${reset}"
+}
+emphasize () {
+    local bold=$(strdecor "bold")
+    local reset=$(strdecor "reset")
+    local mycolor=$(strdecor "white")
+    echo -e "${bold}${mycolor}${@}${reset}"
+}
+
+colorize () {
+    local bold=$(strdecor "bold")
+    local reset=$(strdecor "reset")
+    local mycolor=$(strdecor "$1")
+    echo -e "${bold}${mycolor}${@:2}${reset}"    
+}
+
+codeblockify () {
+    local bold=$(strdecor "bold")
+    local reset=$(strdecor "reset")
+    local mycolor=$(strdecor "magenta")
+    echo -e "${bold}${mycolor}${@}${reset}"    
+}
+
+pnameit () {
+    local bold=$(strdecor "bold")
+    local reset=$(strdecor "reset")
+    local pgmnam=$(colorize "green" "${MYPNAME}")
+    echo -e "${pgmnam}: ${@}"
+}
+
+
+showmessages () {
+    local pgmnam=$(colorize "green" "${MYPNAME}")
+    local testmsg=$(fatal "this" "is a" "fatal")
+    echo -e "${pgmnam}: ${testmsg}"
+    testmsg=$(warning "this" "is a" "warning")
+    echo -e "${pgmnam}: ${testmsg}"
+    testmsg=$(inform "this" "is an" "inform")
+    echo -e "${pgmnam}: ${testmsg}"
+    testmsg=$(emphasize "this" "is an" "emphasize")
+    echo -e "${pgmnam}: ${testmsg}"
+    
+}
+
+showcolortest () {
+    local pgmnam=$(colorize "green" "${MYPNAME}")
+    local BOLD=$(strdecor "bold")
+    local RESET=$(strdecor "reset")
+    local GREEN=$(strdecor "green")
+    local YELLOW=$(strdecor "yellow")
+    local WHITE=$(strdecor "white")
+    local RED=$(strdecor "red")
+    local OOPS=$(strdecor "oops")
+    local DIM=$(strdecor "dim")
+    local UNDERLINE=$(strdecor "underline")
+    local BLUE=$(strdecor "blue")
+    local BLACK=$(strdecor "black")
+    local MAGENTA=$(strdecor "magenta")
+    local CYAN=$(strdecor "cyan")
+    echo -e "${pgmnam}:            ${OOPS}oops ${GREEN}green ${YELLOW}yellow ${WHITE}white ${RED}red ${BLUE}blue ${BLACK}black ${MAGENTA}magenta ${CYAN}cyan${RESET}"
+    echo -e "${pgmnam}: ul:        ${UNDERLINE}${OOPS}oops ${GREEN}green ${YELLOW}yellow ${WHITE}white ${RED}red ${BLUE}blue ${BLACK}black ${MAGENTA}magenta ${CYAN}cyan${RESET}"
+    echo -e "${pgmnam}: dim:       ${DIM}${OOPS}oops ${GREEN}green ${YELLOW}yellow ${WHITE}white ${RED}red ${BLUE}blue ${BLACK}black ${MAGENTA}magenta ${CYAN}cyan${RESET}"
+    echo -e "${pgmnam}: dim+ul:    ${DIM}${UNDERLINE}${OOPS}oops ${GREEN}green ${YELLOW}yellow ${WHITE}white ${RED}red ${BLUE}blue ${BLACK}black ${MAGENTA}magenta ${CYAN}cyan${RESET}"
+    echo -e "${pgmnam}: bold:      ${BOLD}${OOPS}oops ${GREEN}green ${YELLOW}yellow ${WHITE}white ${RED}red ${BLUE}blue ${BLACK}black ${MAGENTA}magenta ${CYAN}cyan${RESET}"
+    echo -e "${pgmnam}: bold+ul:   ${BOLD}${UNDERLINE}${OOPS}oops ${GREEN}green ${YELLOW}yellow ${WHITE}white ${RED}red ${BLUE}blue ${BLACK}black ${MAGENTA}magenta ${CYAN}cyan${RESET}"
+}
