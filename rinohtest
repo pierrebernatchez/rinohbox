@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+#
+set -euo pipefail
+#
+# bash trick to obtain a clean absolute path to this script.
+#
+pushd `dirname $0` >/dev/null
+SCRIPTPATH=`pwd -P`
+popd >/dev/null
+#
+# 
+MYPNAME=$(basename ${0})
+source  ${SCRIPTPATH}/colorsource
+pnameit $(warn 'This script relies on ')$(emph ${SCRIPTPATH}/colorsource )
+pnameit $(info "---------------------------------------------------------------------")
+pnameit $(info "This scrip wants either one or no arguments.")
+pnameit $(info "When it is none.  I creates a new  rinoh sandbox.")
+pnameit $(info "---------------------------------------------------------------------")
+mycount="${#@}"
+pnameit $(warn "number of arguments" "${mycount}")
+if [[ $mycount > 0 ]] ; then
+   pnameit $(info "this is a remove request")
+else
+    pnameit $(info "this is a create request")
+    boxdir=$(newrinoh)
+    pnameit $(info  "boxdir:") $(emph  "${boxdir}") 
+fi
