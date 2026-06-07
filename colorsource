@@ -1,4 +1,25 @@
+#!/usr/bin/env bash
 # colordecorations
+
+##!/usr/bin/env bash
+##
+#set -euo pipefail
+##
+## bash trick to obtain a clean absolute path to this script.
+##
+#pushd `dirname $0` >/dev/null
+#SCRIPTPATH=`pwd -P`
+#popd >/dev/null
+##
+##
+#MYPNAME=$(basename ${0})
+
+# This file must be sourced in bash scripts that set the MYPNAME global variable
+# similar to the above comments.  source this file AFTER MPNAME is set
+# See colortest as an example.
+
+#_X_INDENT
+
 strdecor () {
     
     case ${1} in
@@ -52,7 +73,7 @@ strdecor () {
 	    ;;
 
 	*)
-	    echo 'UH OH:' ${1}
+	    echo "${1}"
     esac
 }
 
@@ -63,80 +84,126 @@ fatal () {
     echo -e "${bold}${mycolor}${@}${reset}"
 }
 
-warning () {
+warn () {
     local bold=$(strdecor "bold")
     local reset=$(strdecor "reset")
     local mycolor=$(strdecor "yellow")
     echo -e "${bold}${mycolor}${@}${reset}"
 }
 
-inform () {
+info () {
     local bold=$(strdecor "bold")
     local reset=$(strdecor "reset")
     local mycolor=$(strdecor "cyan")
     echo -e "${bold}${mycolor}${@}${reset}"
 }
-emphasize () {
+emph () {
     local bold=$(strdecor "bold")
     local reset=$(strdecor "reset")
     local mycolor=$(strdecor "white")
     echo -e "${bold}${mycolor}${@}${reset}"
 }
 
-colorize () {
+colour () {
     local bold=$(strdecor "bold")
     local reset=$(strdecor "reset")
     local mycolor=$(strdecor "$1")
     echo -e "${bold}${mycolor}${@:2}${reset}"    
 }
 
-codeblockify () {
+clr () {
+    local mycolor=$(strdecor "$1")
+    echo -e "${mycolor}${@:2}"    
+}
+
+clrdim () {
+    local mycolor=$(strdecor "dim")
+    echo -e "${mycolor}"    
+}
+
+clrul () {
+    local mycolor=$(strdecor "underline")
+    echo -e "${mycolor}"    
+}
+
+clrbold () {
+    local mycolor=$(strdecor "bold")
+    echo -e "${mycolor}"    
+}
+
+clrreset () {
+    local reset=$(strdecor "reset")
+    echo -e "${reset}"    
+}
+
+code () {
     local bold=$(strdecor "bold")
     local reset=$(strdecor "reset")
     local mycolor=$(strdecor "magenta")
     echo -e "${bold}${mycolor}${@}${reset}"    
 }
 
+_X_PNAME_INDENT=""
 pnameit () {
     local bold=$(strdecor "bold")
     local reset=$(strdecor "reset")
-    local pgmnam=$(colorize "green" "${MYPNAME}")
-    echo -e "${pgmnam}: ${@}"
+    local pgmnam=$(colour "green" "${MYPNAME}")
+    echo -e "${pgmnam}:${_X_PNAME_INDENT} ${@}"
 }
+ 
+countedindent () {
+    local astr=""
+    for i in $(seq 1 ${#1}); do
+	astr="${astr} "
+    done
+    echo -e "${astr}"
+}
+
+_X_INDENT=$(countedindent "${MYPNAME}: ")
+
+
+setindent () {
+    _X_INDENT=$(countedindent "${1}" )
+}
+
+resetindent () {
+    _X_INDENT=$(countedindent "${MYPNAME}: " )
+}
+
+setpindent () {
+    _X_PNAME_INDENT=$(countedindent "${1}" )
+}
+
+resetpindent () {
+    _X_PNAME_INDENT=""
+}
+
+
+indentit () {
+    echo -e "${_X_INDENT}${_X_PNAME_INDENT}${@}"
+}
+
+printit () {
+    echo -e "${_X_PNAME_INDENT}${@}"
+}
+
+
 
 
 showmessages () {
-    local pgmnam=$(colorize "green" "${MYPNAME}")
-    local testmsg=$(fatal "this" "is a" "fatal")
-    echo -e "${pgmnam}: ${testmsg}"
-    testmsg=$(warning "this" "is a" "warning")
-    echo -e "${pgmnam}: ${testmsg}"
-    testmsg=$(inform "this" "is an" "inform")
-    echo -e "${pgmnam}: ${testmsg}"
-    testmsg=$(emphasize "this" "is an" "emphasize")
-    echo -e "${pgmnam}: ${testmsg}"
-    
+    pnameit $(fatal "this" "is a" "fatal")
+    pnameit $(warn "this" "is a" "warn")
+    pnameit $(info "this" "is an" "info")
+    pnameit $(emph "this" "is an" "emph")
+    pnameit $(code "this" "is a" "code")
 }
 
 showcolortest () {
-    local pgmnam=$(colorize "green" "${MYPNAME}")
-    local BOLD=$(strdecor "bold")
-    local RESET=$(strdecor "reset")
-    local GREEN=$(strdecor "green")
-    local YELLOW=$(strdecor "yellow")
-    local WHITE=$(strdecor "white")
-    local RED=$(strdecor "red")
-    local OOPS=$(strdecor "oops")
-    local DIM=$(strdecor "dim")
-    local UNDERLINE=$(strdecor "underline")
-    local BLUE=$(strdecor "blue")
-    local BLACK=$(strdecor "black")
-    local MAGENTA=$(strdecor "magenta")
-    local CYAN=$(strdecor "cyan")
-    echo -e "${pgmnam}:            ${OOPS}oops ${GREEN}green ${YELLOW}yellow ${WHITE}white ${RED}red ${BLUE}blue ${BLACK}black ${MAGENTA}magenta ${CYAN}cyan${RESET}"
-    echo -e "${pgmnam}: ul:        ${UNDERLINE}${OOPS}oops ${GREEN}green ${YELLOW}yellow ${WHITE}white ${RED}red ${BLUE}blue ${BLACK}black ${MAGENTA}magenta ${CYAN}cyan${RESET}"
-    echo -e "${pgmnam}: dim:       ${DIM}${OOPS}oops ${GREEN}green ${YELLOW}yellow ${WHITE}white ${RED}red ${BLUE}blue ${BLACK}black ${MAGENTA}magenta ${CYAN}cyan${RESET}"
-    echo -e "${pgmnam}: dim+ul:    ${DIM}${UNDERLINE}${OOPS}oops ${GREEN}green ${YELLOW}yellow ${WHITE}white ${RED}red ${BLUE}blue ${BLACK}black ${MAGENTA}magenta ${CYAN}cyan${RESET}"
-    echo -e "${pgmnam}: bold:      ${BOLD}${OOPS}oops ${GREEN}green ${YELLOW}yellow ${WHITE}white ${RED}red ${BLUE}blue ${BLACK}black ${MAGENTA}magenta ${CYAN}cyan${RESET}"
-    echo -e "${pgmnam}: bold+ul:   ${BOLD}${UNDERLINE}${OOPS}oops ${GREEN}green ${YELLOW}yellow ${WHITE}white ${RED}red ${BLUE}blue ${BLACK}black ${MAGENTA}magenta ${CYAN}cyan${RESET}"
+    pnameit "          " $(clr "oops" ) $(clr "green" "green") $(clr "yellow" "yellow") $(clr "white" "white") $(clr "red" "red") $(clr "blue" "blue") $(clr "black" "black") $(clr "magenta" "magenta") $(clr "cyan" "cyan")$(clrreset)
+    pnameit "ul:       " $(clrul)$(clr "oops" ) $(clr "green" "green") $(clr "yellow" "yellow") $(clr "white" "white") $(clr "red" "red") $(clr "blue" "blue") $(clr "black" "black") $(clr "magenta" "magenta") $(clr "cyan" "cyan")$(clrreset)
+    pnameit "dim:      " $(clrdim)$(clr "oops" ) $(clr "green" "green") $(clr "yellow" "yellow") $(clr "white" "white") $(clr "red" "red") $(clr "blue" "blue") $(clr "black" "black") $(clr "magenta" "magenta") $(clr "cyan" "cyan")$(clrreset)
+    pnameit "dim+ul    " $(clrdim)$(clrul)$(clr "oops" ) $(clr "green" "green") $(clr "yellow" "yellow") $(clr "white" "white") $(clr "red" "red") $(clr "blue" "blue") $(clr "black" "black") $(clr "magenta" "magenta") $(clr "cyan" "cyan")$(clrreset)
+    pnameit "bold      " $(clrbold)$(clr "oops" ) $(clr "green" "green") $(clr "yellow" "yellow") $(clr "white" "white") $(clr "red" "red") $(clr "blue" "blue") $(clr "black" "black") $(clr "magenta" "magenta") $(clr "cyan" "cyan")$(clrreset)
+    pnameit "bold+ul   " $(clrbold)$(clrul)$(clr "oops" ) $(clr "green" "green") $(clr "yellow" "yellow") $(clr "white" "white") $(clr "red" "red") $(clr "blue" "blue") $(clr "black" "black") $(clr "magenta" "magenta") $(clr "cyan" "cyan")$(clrreset)    
+
 }

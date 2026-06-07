@@ -8,13 +8,36 @@ pushd `dirname $0` >/dev/null
 SCRIPTPATH=`pwd -P`
 popd >/dev/null
 #
-#
+# 
 MYPNAME=$(basename ${0})
-source  /home/ubuntu/repos/rinohtools/colorsource
-
+source  ${SCRIPTPATH}/colorsource
+pnameit $(info "---------------------------------------------------------------------")
+pnameit $(warn 'This script relies on ')$(emph ${SCRIPTPATH}/colorsource )$(warn ' bash functions to illustrate printing colours.')
+pnameit $(info '')
+setpindent "    "
 showcolortest
-echo 
+pnameit $(info '')
+setpindent "               "
 showmessages
-echo
-
+resetpindent
+pnameit $(info "---------------------------------------------------------------------")
+setpindent "               "
+pnameit $(colour 'blue' "This" "is" "just" "blue" )
+resetpindent
+pnameit $(info "---------------------------------------------------------------------")
+indentit $(info 'Examples without the progam name.')
+indentit $(info "No program name, but indented to line up")
+indentit $(info "We use ")$(emph "indentit")$(info " instead of") $(emph "pnameit") $(info "for this")
+indentit $(fatal "Fatal error")
+setpindent "    "
+indentit $(warn "Just a warning")
+indentit $(emph "Importand item")
+resetpindent
+printit $(info "---------------------------------------------------------------------")
+printit $(info 'Neither progam name nor alignment indentation,')
+printit $(info "We use") $(emph "printit") $(info "for this")
+printit $(info '')
+printit $(code 'Get this by using' '$(code "...")')
+printit $(info "lines" "may combine") $(fatal "fatal") $(warn "warning") $(info "with" "info") $(code "with code") $(emph "and emphasis")
+pnameit $(info "---------------------------------------------------------------------")
 
