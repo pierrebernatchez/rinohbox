@@ -19,7 +19,11 @@ pnameit $(info "----------------------------------------------------------------
 mycount="${#@}"
 pnameit $(warn "number of arguments" "${mycount}")
 if [[ $mycount > 0 ]] ; then
-   pnameit $(info "this is a remove request")
+    aboxdir="${1}"
+    pnameit $(info "request to remove") $(emph  "${aboxdir}")
+    boxdir=$(rmrinohbox "${aboxdir}")
+    pnameit $(info "removed") $(emph  "${boxdir}")
+    # 
 else
     pnameit $(info "this is a create request")
     boxdir=$(newrinoh)

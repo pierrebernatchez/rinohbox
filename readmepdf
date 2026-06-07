@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#
+set -euo pipefail
+#
+# bash trick to obtain a clean absolute path to this script.
+#
+pushd `dirname $0` >/dev/null
+SCRIPTPATH=`pwd -P`
+popd >/dev/null
+#
+# 
+MYPNAME=$(basename ${0})
+echo -e "${MYPNAME}:" rendering readme.md to readme.doc
+result=$(pandoc README.md -o README.pdf --pdf-engine=weasyprint)

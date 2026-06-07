@@ -14,6 +14,6 @@ Home = "http://www.bernatchez.net/index.html"
 
 [project.scripts]
 newrinoh = "rinohbox.rinohbox:newbox"
-rmrinohbox = "rinohbox.rinohbox:saferemovebox"
-cleanrinohbox = "rinohbox.rinohbox:cleanbox"
-rinohrender = "rinohbox.rinohrender:render"
+rmrinoh = "rinohbox.rinohbox:saferemovebox"
+cleanrinoh = "rinohbox.rinohbox:cleanbox"
+renderrinoh = "rinohbox.rinohrender:render"
