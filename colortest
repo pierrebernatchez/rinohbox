@@ -41,3 +41,4 @@ printit $(code 'Get this by using' '$(code "...")')
 printit $(info "lines" "may combine") $(fatal "fatal") $(warn "warning") $(info "with" "info") $(code "with code") $(emph "and emphasis")
 pnameit $(info "---------------------------------------------------------------------")
 
+

@@ -14,6 +14,8 @@ import argparse
 import importlib.resources as resources
 from pathlib import Path
 
+SAFEPRIFIX="rinohb"
+SAFESUFFIX="dblchk"
 def preparebox(target):
     """Transfer the .py files we need to the target directory"""
     src = resources.files('rinohbox') # / 'conf.py'
@@ -48,10 +50,20 @@ def do_cleanbox(target):
 
 def do_newbox():
     """Create and initialize a temp directory to be used as sandbox for rendering with rinoh"""
-    tmpdir = tempfile.mkdtemp()    
+    tmpdir = tempfile.mkdtemp(prefix=SAFEPRIFIX, suffix=SAFESUFFIX)
     fulltarget = Path(tmpdir).resolve()
     preparebox(fulltarget)    
     return fulltarget
+
+def newbox():
+    """Clean out the contents of a rinohbox for re-use"""
+    parser = argparse.ArgumentParser()
+    args = parser.parse_args()
+    if len(sys.argv) > 1:
+        parser.error("This command takes no arguments")    
+    boxdir= do_newbox()
+    print(f"{boxdir}")
+    exit(0)
 
 def cleanbox():
     """Clean out the contents of a rinohbox for re-use"""
@@ -61,13 +73,37 @@ def cleanbox():
     target = do_cleanbox(args.rinohboxdir[0])
     print(f"{target}")
     exit(0)
-    
-def newbox():
-    """Create and initialize a temp directory to be used as sandbox for rendering with rinoh"""
-    boxdir = do_newbox()
-    print(f"{boxdir}")
-    exit(0)
 
+def safeboxdir(tmpboxdir):
+    """Make sure our box is a directory that matches our nameing pattern"""
+    filepath = Path(tmpboxdir)
+    filepath.resolve()
+    if filepath.is_dir():
+        filename = filepath.name
+        if filename.startswith(SAFEPRIFIX) and filename.endswith(SAFESUFFIX):
+            return True
+        else:
+            print(f"{__file__}: safeboxdir({filepath}) FAILED. Invalid Name pattern.", file=sys.stderr)
+            return False
+    else:
+        print(f"{__file__}: safeboxdir({filepath}) FAILED. Not a directory.", file=sys.stderr)
+        return False
+    
+def saferemovebox():
+    """Recursively removes a directory.  But its name must match prefix and suffix."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('rinohboxdir', nargs=1, help='an existing rinobox sandbox directory.')
+    args = parser.parse_args()
+    tmpboxdir  = args.rinohboxdir[0]
+    if safeboxdir(tmpboxdir):
+        shutil.rmtree(tmpboxdir)
+        exit(0)
+    else:
+        exit(1)
+
+    
+
+    
 
 script_name = os.path.basename(__file__)
 if __name__ == '__main__':
