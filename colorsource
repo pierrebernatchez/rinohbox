@@ -159,15 +159,26 @@ countedindent () {
     echo -e "${astr}"
 }
 
-_X_INDENT=$(countedindent "${MYPNAME}: ")
 
+_X_INDENT=$(countedindent "${MYPNAME}: ")
+dashedindent () {
+    local astr=""
+    for i in $(seq 1 ${#_X_INDENT}); do
+	astr="${astr}-"
+    done
+    echo -e "${astr}"
+}
+_X_DASH_INDENT=$(dashedindent)
+ 
 
 setindent () {
     _X_INDENT=$(countedindent "${1}" )
+    _X_DASH_INDENT=$(dashedindent)
 }
 
 resetindent () {
     _X_INDENT=$(countedindent "${MYPNAME}: " )
+    _X_DASH_INDENT=$(dashedindent)
 }
 
 setpindent () {
@@ -178,10 +189,18 @@ resetpindent () {
     _X_PNAME_INDENT=""
 }
 
-
 indentit () {
     echo -e "${_X_INDENT}${_X_PNAME_INDENT}${@}"
 }
+
+dashit () {
+    local bold=$(strdecor "bold")
+    local reset=$(strdecor "reset")
+    local mycolor=$(strdecor "$1")
+    local myprefix="${_X_DASH_INDENT}" 
+    echo -e "${bold}${mycolor}${myprefix}${reset}${_X_PNAME_INDENT}${@:2}"
+}
+
 
 printit () {
     echo -e "${_X_PNAME_INDENT}${@}"

@@ -8,11 +8,15 @@ pushd `dirname $0` >/dev/null
 SCRIPTPATH=`pwd -P`
 popd >/dev/null
 #
-# 
+#
+MYSOURCESDIR="${HOME}/.rinohbox/bashsources"
+#MYSOURCESDIR="."
+_LONGDASHES="---------------------------------------------------------------------"
 MYPNAME=$(basename ${0})
-source  ${SCRIPTPATH}/colorsource
-pnameit $(info "---------------------------------------------------------------------")
-pnameit $(warn 'This script relies on ')$(emph ${SCRIPTPATH}/colorsource )$(warn ' bash functions to illustrate printing colours.')
+source  ${MYSOURCESDIR}/colorsource
+pnameit $(info "${_LONGDASHES}")
+pnameit $(warn 'This script relies on ')$(emph ${MYSOURCESDIR}/colorsource )
+pnameit $(warn 'bash functions to illustrate printing colours.')
 pnameit $(info '')
 setpindent "    "
 showcolortest
@@ -20,25 +24,38 @@ pnameit $(info '')
 setpindent "               "
 showmessages
 resetpindent
-pnameit $(info "---------------------------------------------------------------------")
-setpindent "               "
-pnameit $(colour 'blue' "This" "is" "just" "blue" )
+pnameit $(info "${_LONGDASHES}")
+# setpindent "               "
+pnameit ""  
+pnameit $(info "by using:") $(code 'pnameit $(code "This is colourful code")' ) $(info "you get:")
+pnameit ""  
+pnameit $(code "This is colourful code")
+pnameit "" 
+pnameit $(info "by using:") $(code 'pnameit' '$(colour' '"blue"' '"This is just blue"' ')') $(info "you get:")
+pnameit ""  
+pnameit $(colour "blue" "This is just blue") 
+pnameit ""  
 resetpindent
-pnameit $(info "---------------------------------------------------------------------")
+pnameit $(info "${_LONGDASHES}")
 indentit $(info 'Examples without the progam name.')
 indentit $(info "No program name, but indented to line up")
-indentit $(info "We use ")$(emph "indentit")$(info " instead of") $(emph "pnameit") $(info "for this")
+indentit $(info "We use ")$(code "indentit")$(info " instead of") $(code "pnameit") $(info "for this")
 indentit $(fatal "Fatal error")
 setpindent "    "
 indentit $(warn "Just a warning")
 indentit $(emph "Importand item")
 resetpindent
-printit $(info "---------------------------------------------------------------------")
-printit $(info 'Neither progam name nor alignment indentation,')
-printit $(info "We use") $(emph "printit") $(info "for this")
-printit $(info '')
-printit $(code 'Get this by using' '$(code "...")')
+printit $(info 'For the line below we use') $(code "dashit \"cyan\"" '$(info "------ ...")')  
+dashit "cyan" $(info "${_LONGDASHES}")
+printit $(info 'Neither progam name nor alignment indentation, we use')  $(code "printit") $(info "for this.")
+printit $(info 'But the') $(code  'setpindent') $(info 'indent still applies. Also true for:') $(code 'dashit.' )
+printit $(info 'Like this:') $(code 'setpindent "    "') $(info "Then") $(code "pnameit printit dashit")
+setpindent "    "
+pnameit $(info "${_LONGDASHES}")
+printit $(info "${_LONGDASHES}")
+dashit "cyan" $(info "${_LONGDASHES}")
 printit $(info "lines" "may combine") $(fatal "fatal") $(warn "warning") $(info "with" "info") $(code "with code") $(emph "and emphasis")
-pnameit $(info "---------------------------------------------------------------------")
+resetpindent
+pnameit $(info "${_LONGDASHES}")
 
 

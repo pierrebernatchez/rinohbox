@@ -10,8 +10,13 @@ popd >/dev/null
 #
 # 
 MYPNAME=$(basename ${0})
-source  ${SCRIPTPATH}/colorsource
-pnameit $(warn 'This script relies on ')$(emph ${SCRIPTPATH}/colorsource )
+MYSOURCESDIR="${HOME}/.rinohbox/bashsources"
+DLFTRSTIN="${HOME}/.rinohbox/rst_in"
+DFLTPDFOUT="${HOME}/.rinohbox/pdf_out"
+MYPREAMPLE="${DLFTRSTIN}/pdf_preamble.rst"
+
+source  ${MYSOURCESDIR}/colorsource
+pnameit $(warn 'This script relies on ')$(emph ${MYSOURCESDIR}/colorsource )
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "This scrip wants either one or no arguments.")
 pnameit $(info "When it is none.  I creates a new  rinoh sandbox.")
@@ -21,7 +26,7 @@ pnameit $(warn "number of arguments" "${mycount}")
 if [[ $mycount > 0 ]] ; then
     aboxdir="${1}"
     pnameit $(info "request to remove") $(emph  "${aboxdir}")
-    boxdir=$(rmrinohbox "${aboxdir}")
+    boxdir=$(rmrinoh "${aboxdir}")
     pnameit $(info "removed") $(emph  "${boxdir}")
     # 
 else

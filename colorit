@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+set -euo pipefail
+#
+# bash trick to obtain a clean absolute path to this script.
+#
+pushd `dirname $0` >/dev/null
+SCRIPTPATH=`pwd -P`
+popd >/dev/null
+#
+# 
+MYPNAME=$(basename ${0})
+MYSOURCESDIR="${HOME}/.rinohbox/bashsources"
+DLFTRSTIN="${HOME}/.rinohbox/rst_in"
+DFLTPDFOUT="${HOME}/.rinohbox/pdf_out"
+MYPREAMPLE="${DLFTRSTIN}/pdf_preamble.rst"
+source  ${MYSOURCESDIR}/colorsource
+
+if [[ -t 0 ]]; then
+    pnameit $(fatal "This script is only intended for pipe or file input. Aborting.")
+    exit 1
+fi
+mycolor=${1:-red}
+while IFS= read -r inputline; do
+    printit $(colour "${mycolor}" "${inputline}")
+done
+      
+	

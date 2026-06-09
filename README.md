@@ -41,18 +41,24 @@ The process of rendering a list of one or more .rst files consists of
 
 ## Implementation Overview
 
-  We have implemented **newrinohbox** which accomplishes step 1.  It
+  We have implemented **newrinoh** which accomplishes step 1.  It
   prints the full path name of the sandbox directory to stdout.  Any
   other printing is to stderr.  This is for the convenience of bash
   scripting.
 
-  We have implemented **rinohrender** which accomplishes steps 2, 3, and
+  We have implemented **renderrinoh** which accomplishes steps 2, 3, and
   4.  It takes the sandbox path as one of its inputs.  It also prints
-  the sandbox path to stdout and any other print to stderr, also for
+  the sandbox path to stdout and any other print is to stderr, also for
   bash scripting convenience.
 
-  Removing the sandbox is merely a matter of **rm -r -I <sanboxpath>**
-  which accomplished step 5.  Both **newrinohbox** and **rinohrender**
+  Removing the sandbox is jusr a matter of **rm -r <sanboxpath>**
+  which accomplished step 5. But since that is quite a dangerous
+  command, especially if done in a script, we have implemented
+  **rmrinoh** to do that.  It double checks the name pattern, and that
+  the argument is a directory before removing the directory and
+  everything below it.
+
+Both **newrinohbox** and **rinohrender**
   print the <sanboxpath> value as their only output to stdout.  So it
   is easy to capture that into a variable for bash scfripting removal
   of the sandbox.
