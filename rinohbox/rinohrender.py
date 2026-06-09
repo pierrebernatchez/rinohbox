@@ -99,7 +99,7 @@ def render():
     dflt_target= dirname / Path( f"{curbase}-pdfs")
     parser = argparse.ArgumentParser()
     parser.add_argument('rstfiles', nargs='*', help='RST files to process.')
-    parser.add_argument('-b', '--boxpath', dest="boxpath", required=true,
+    parser.add_argument('-b', '--boxpath', dest="boxpath", required=True,
                         help=f'Sandbox to use (as returned by newrinoh).')
     parser.add_argument('-m', '--media', default=dflt_media, dest="media",
                         help=f'Where to get media files from (dflt {dflt_media}).')
