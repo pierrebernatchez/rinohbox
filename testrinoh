@@ -8,15 +8,19 @@ pushd `dirname $0` >/dev/null
 SCRIPTPATH=`pwd -P`
 popd >/dev/null
 #
-# 
 MYPNAME=$(basename ${0})
 MYSOURCESDIR="${HOME}/.rinohbox/bashsources"
-DLFTRSTIN="${HOME}/.rinohbox/rst_in"
-DFLTPDFOUT="${HOME}/.rinohbox/pdf_out"
-MYPREAMPLE="${DLFTRSTIN}/pdf_preamble.rst"
+MYTESTBED=${HOME}/.rinohbox/benchrst
+DLFTRSTIN="${MYTESTBED}"
+DFLTPDFOUT="${DLFTRSTIN}-pdfs"
+MYPREAMBLE="${DLFTRSTIN}/pdfpreamble.rst"
 
+pushd ${MYTESTBED} >/dev/null
 source  ${MYSOURCESDIR}/colorsource
+pnameit $(warn 'This script set current directory to') $(emph "${MYTESTBED}" )
 pnameit $(warn 'This script relies on ')$(emph ${MYSOURCESDIR}/colorsource )
+pnameit $(info "using preamble:" ) $(code "${MYPREAMBLE}")
+pnameit $(info "using article:" ) $(code "${DLFTRSTIN}/sampl-calp001-en.rst")
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "This scrip wants either one or no arguments.")
 pnameit $(info "When it is none.  I creates a new  rinoh sandbox.")
