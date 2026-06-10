@@ -105,9 +105,12 @@ def render():
                         help=f'Where to get media files from (dflt {dflt_media}).')
     parser.add_argument('-t', '--target', default=dflt_target, dest="target",
                         help=f'Where to put the resulting documents (dflt {dflt_target}).')
-    parser.add_argument('-p', '--preamble', dest='preamble', help=f"File containing preamble text for index.rst file (dflt None)")
-    
+    parser.add_argument('-p', '--preamble', dest='preamble',
+                        help=f"File containing preamble text for index.rst file (dflt None)")
     args = parser.parse_args()
+    mytemp = args.boxpath
+    print(f"{mytemp}")
+    
     
     if len(args.rstfiles) == 0:
         myargs = sorted([str(p) for p in Path('.').glob('*.rst')])
@@ -120,7 +123,8 @@ def render():
     else:
         preamblefile = Path(args.preamble).resolve()
         # if necessary drop the preamble file from the ones we will include in the render
-        valid_args = [Path(af).resolve() for af in valid_args if not os.path.samefile(Path(af).resolve(),  preamblefile)]
+        valid_args = [Path(af).resolve() for af in valid_args
+                      if not os.path.samefile(Path(af).resolve(),  preamblefile)]
         with open(preamblefile, "r") as pfile:
             preamble = pfile.read()
         print(f"{PROGNAME}: Preamble: BEGIN", file=sys.stderr)
