@@ -120,7 +120,7 @@ def render():
     else:
         preamblefile = Path(args.preamble).resolve()
         # if necessary drop the preamble file from the ones we will include in the render
-        valid_args = [ Path(af).resolve() for af in valid_args if not os.path.samefile(Path(af).resolve(),  preamblefile)].
+        valid_args = [Path(af).resolve() for af in valid_args if not os.path.samefile(Path(af).resolve(),  preamblefile)]
         with open(preamblefile, "r") as pfile:
             preamble = pfile.read()
         print(f"{PROGNAME}: Preamble: BEGIN", file=sys.stderr)
