@@ -39,11 +39,20 @@ done
 pnameit $(info "---------------------------------------------------------------------")
 #
 # make a sandbox
-sanbox=$(newrinoh)
+sandbox=$(newrinoh)
 #pnameit "preamble: "${BENCHPREAMBLE}"
-pnameit "command:" "renderrinoh" "--boxpath" "${sanbox}" "--preamble" "${BENCHPREAMBLE}"
-renderresult=$(renderrinoh "--boxpath" "${sanbox}" "--preamble" "${BENCHPREAMBLE}")
+pnameit "command:" "renderrinoh" "--boxpath" "${sandbox}" "--preamble" "${BENCHPREAMBLE}"
+renderresult=$(renderrinoh "--boxpath" "${sandbox}" "--preamble" "${BENCHPREAMBLE}")
 pnameit "renderrinoh returned ${renderresult}"
+if [[ "${renderresult}" == "${sandbox}" ]] ; then
+    pnameit $(info "renderrinoh: Matching result and  --boxpath argument")
+else
+    pnameit $(fatal "renderrinoh: Mismatching result and  --boxpath argument")
+fi
 rmresult=$(rmrinoh "${sandbox}")
-pnameit "rmrinoh returned ${rmresult}"
-
+if [[ "${rmresult}" == "${sandbox}" ]] ; then
+    pnameit $(info "rmrinoh: Matching result and  argument")
+else
+    pnameit $(fatal "rmrinoh: Mismatching result and argument")
+fi
+pnameit $(info "rhinobox:${sandbox} has been successfully removed")

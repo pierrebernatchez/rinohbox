@@ -97,13 +97,11 @@ def saferemovebox():
     tmpboxdir  = args.rinohboxdir[0]
     if safeboxdir(tmpboxdir):
         shutil.rmtree(tmpboxdir)
+        # the convention is to print the path name to return it to the invoking shell program
+        print(f"{tmpboxdir}")
         exit(0)
     else:
         exit(1)
-
-    
-
-    
 
 script_name = os.path.basename(__file__)
 if __name__ == '__main__':
