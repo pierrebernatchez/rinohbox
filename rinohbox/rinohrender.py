@@ -120,18 +120,18 @@ def render():
     else:
         preamblefile = Path(args.preamble).resolve()
         # if necessary drop the preamble file from the ones we will include in the render
-        valid_args = [ Path(af).resolve() for af in valid_args if not os.path.samefile(Path(af).resolve(),  preamblefile)]
+        valid_args = [ Path(af).resolve() for af in valid_args if not os.path.samefile(Path(af).resolve(),  preamblefile)].
         with open(preamblefile, "r") as pfile:
             preamble = pfile.read()
-    print(f"{PROGNAME}: Preamble: BEGIN", file=sys.stderr)
-    print(f"{preamble}{PROGNAME}: Preamble: END")
-    print(f"{PROGNAME}: Media from: {args.media}", file=sys.stderr)
-    print(f"{PROGNAME}: Results to: {args.target}", file=sys.stderr)
-    if len(valid_args) == 0 :
-        print(f"{PROGNAME}: Nothing to render.", file=sys.stderr)
-    else:
-        for anrst in valid_args:
-            print(f"{PROGNAME}:     {anrst}", file=sys.stderr)
+        print(f"{PROGNAME}: Preamble: BEGIN", file=sys.stderr)
+        print(f"{preamble}{PROGNAME}: Preamble: END", file=sys.stderr)
+        print(f"{PROGNAME}: Media from: {args.media}", file=sys.stderr)
+        print(f"{PROGNAME}: Results to: {args.target}", file=sys.stderr)
+        if len(valid_args) == 0 :
+            print(f"{PROGNAME}: Nothing to render.", file=sys.stderr)
+        else:
+            for anrst in valid_args:
+                print(f"{PROGNAME}: {anrst}", file=sys.stderr)
     
 
 script_name = os.path.basename(__file__)

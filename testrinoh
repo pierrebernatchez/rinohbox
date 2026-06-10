@@ -9,32 +9,41 @@ SCRIPTPATH=`pwd -P`
 popd >/dev/null
 #
 MYPNAME=$(basename ${0})
-MYSOURCESDIR="${HOME}/.rinohbox/bashsources"
-MYTESTBED=${HOME}/.rinohbox/benchrst
-DLFTRSTIN="${MYTESTBED}"
-DFLTPDFOUT="${DLFTRSTIN}-pdfs"
-MYPREAMBLE="${DLFTRSTIN}/pdfpreamble.rst"
+# Configure these
+BENCHDIR="${HOME}/.rinohbox/benchrst"
+REPOPREAMBLE="${HOME}/repos/rinohbox/test/pdfpreamble.rst"
+BENCHBASE=$(dirname "${BENCHDIR}")
+BASHDIR="${BENCHBASE}/bashsources"
 
-pushd ${MYTESTBED} >/dev/null
-source  ${MYSOURCESDIR}/colorsource
-pnameit $(warn 'This script set current directory to') $(emph "${MYTESTBED}" )
-pnameit $(warn 'This script relies on ')$(emph ${MYSOURCESDIR}/colorsource )
-pnameit $(info "using preamble:" ) $(code "${MYPREAMBLE}")
-pnameit $(info "using article:" ) $(code "${DLFTRSTIN}/sampl-calp001-en.rst")
+# Derive these
+BENCHDIRMEDIA="${BENCHDIR}-media"
+BENCHDIRPDFS="${BENCHDIR}-pdfs"
+REPOARTICLESDIR=$(dirname ${REPOPREAMBLE})
+REPOMEDIADIR="${REPOARTICLESDIR}-media"
+PREAMBLENAME=$(basename "${REPOPREAMBLE}")
+BENCHPREAMBLE="${BENCHDIR}/${PREAMBLENAME}"
+pushd ${BENCHDIR} >/dev/null
+source  ${BASHDIR}/colorsource
+pnameit $(warn 'This script set current directory to') $(emph "${BENCHDIR}" )
+pnameit $(warn 'It does that so that other sripts we use have convenient defaults.')
+pnameit $(warn 'This script relies on ')$(emph ${BASHDIR}/colorsource )
+pnameit $(info "using preamble:" ) $(code "${BENCHPREAMBLE}")
+pnameit $(info "using article:" ) $(code "${BENCHDIR}/sampl-calp001-en.rst")
 pnameit $(info "---------------------------------------------------------------------")
-pnameit $(info "This scrip wants either one or no arguments.")
-pnameit $(info "When it is none.  I creates a new  rinoh sandbox.")
+pnameit $(info "help")
+mapfile -t helpresult < <(renderrinoh --help)
+pnameit ""
+for item in "${helpresult[@]}" ; do
+    pnameit "${item}"
+done
 pnameit $(info "---------------------------------------------------------------------")
-mycount="${#@}"
-pnameit $(warn "number of arguments" "${mycount}")
-if [[ $mycount > 0 ]] ; then
-    aboxdir="${1}"
-    pnameit $(info "request to remove") $(emph  "${aboxdir}")
-    boxdir=$(rmrinoh "${aboxdir}")
-    pnameit $(info "removed") $(emph  "${boxdir}")
-    # 
-else
-    pnameit $(info "this is a create request")
-    boxdir=$(newrinoh)
-    pnameit $(info  "boxdir:") $(emph  "${boxdir}") 
-fi
+#
+# make a sandbox
+sanbox=$(newrinoh)
+#pnameit "preamble: "${BENCHPREAMBLE}"
+pnameit "command:" "renderrinoh" "--boxpath" "${sanbox}" "--preamble" "${BENCHPREAMBLE}"
+renderresult=$(renderrinoh "--boxpath" "${sanbox}" "--preamble" "${BENCHPREAMBLE}")
+pnameit "renderrinoh returned ${renderresult}"
+rmresult=$(rmrinoh "${sandbox}")
+pnameit "rmrinoh returned ${rmresult}"
+
