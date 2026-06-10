@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+#
+set -euo pipefail
+#
+# bash trick to obtain a clean absolute path to this script.
+#
+pushd `dirname $0` >/dev/null
+SCRIPTPATH=`pwd -P`
+popd >/dev/null
+#
+MYPNAME=$(basename ${0})
+# Configure these
+BENCHDIR="${HOME}/.rinohbox/benchrst"
+REPOPREAMBLE="${HOME}/repos/rinohbox/test/pdfpreamble.rst"
+BENCHBASE=$(dirname "${BENCHDIR}")
+BASHDIR="${BENCHBASE}/bashsources"
+
+# Derive these
+BENCHDIRMEDIA="${BENCHDIR}-media"
+BENCHDIRPDFS="${BENCHDIR}-pdfs"
+REPOARTICLESDIR=$(dirname ${REPOPREAMBLE})
+REPOMEDIADIR="${REPOARTICLESDIR}-media"
+PREAMBLENAME=$(basename "${REPOPREAMBLE}")
+BENCHPREAMBLE="${BENCHDIR}/${PREAMBLENAME}"
+pushd ${BENCHDIR} >/dev/null
+
+## the article the bench test will render
+TESTARTICLE="${BENCHDIR}/sampl-calp003-en.rst"
+ERRLOGS=("${BENCHDIRPDFS}/newrinoh.errlog" "${BENCHDIRPDFS}/renderrinoh.errlog" "${BENCHDIRPDFS}/rmrinoh.errlog"  ) 
+source  ${BASHDIR}/colorsource
+pnameit $(info "#####################################################################")
+pnameit $(info "Bench Test") $(date "--rfc-3339=seconds")
+pnameit $(info "---------------------------------------------------------------------")
+pnameit $(info "using current directory:") $(emph "${BENCHDIR}" )
+pnameit $(info "using preamble:" ) $(code "${BENCHPREAMBLE}")
+pnameit $(info "using article:" ) $(code "${TESTARTICLE}")
+pnameit $(info "using media:" ) $(code "${BENCHDIRMEDIA}")
+pnameit $(info "using target:" ) $(code "${BENCHDIRPDFS}")
+pnameit $(info "---------------------------------------------------------------------")
+#
+# make a sandbox
+pnameit $(code "newrinoh")
+sandbox=$(newrinoh 2> "${BENCHDIRPDFS}/newrinoh.errlog")
+pnameit $(code "renderrinoh" "-b" "${sandbox}" "-p" "PREAMBLE" "-m" "MEDIA" "-t" "TARGET" "ARTICLE")
+renderresult=$(renderrinoh "-b" "${sandbox}" "-p" "${BENCHPREAMBLE}" "-m" "${BENCHDIRMEDIA}" "-t" "${BENCHDIRPDFS}" "${TESTARTICLE}" 2> "${BENCHDIRPDFS}/renderrinoh.errlog")
+pnameit $(code "rmrinoh" "${sandbox}")
+rmresult=$(rmrinoh "${sandbox}" 2> "${BENCHDIRPDFS}/rmrinoh.errlog")
+pnameit $(info "---------------------------------------------------------------------")
+if [[ "${renderresult}" == "${sandbox}" ]] ; then
+    pnameit $(info "renderrinoh: confirm result matches  --boxpath argument")
+else
+    pnameit $(fatal "renderrinoh: FAILED to confirm result matches  --boxpath argument")
+fi
+#rmresult=$(rmrinoh "${sandbox}" 2> "${BENCHDIRPDFS}/rmrinoh.errlog")
+if [[ "${rmresult}" == "${sandbox}" ]] ; then
+    pnameit $(info "rmrinoh: confirm result matches  argument")
+else
+    pnameit $(fatal "rmrinoh: FAIL to confirm result matches argument")
+fi
+pnameit $(info "${sandbox} has been successfully removed")
+pnameit $(info "stderr logs:")
+setpindent "    "
+for alog in ${ERRLOGS[@]}; do
+    pnameit "${alog}"
+done
+resetpindent

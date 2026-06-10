@@ -7,7 +7,7 @@ set -euo pipefail
 pushd `dirname $0` >/dev/null
 SCRIPTPATH=`pwd -P`
 popd >/dev/null
-CURRDIRATSTART=$(pwd)
+SCRIPPATH=$(pwd)
 #
 #
 MYPNAME=$(basename ${0})
@@ -18,6 +18,7 @@ REPOPREAMBLE="${HOME}/repos/rinohbox/test/pdfpreamble.rst"
 BENCHBASE=$(dirname "${BENCHDIR}")
 BASHDIR="${BENCHBASE}/bashsources"
 
+
 # Derive these
 BENCHDIRMEDIA="${BENCHDIR}-media"
 BENCHDIRPDFS="${BENCHDIR}-pdfs"
@@ -26,14 +27,17 @@ REPOMEDIADIR="${REPOARTICLESDIR}-media"
 PREAMBLENAME=$(basename "${REPOPREAMBLE}")
 BENCHPREAMBLE="${BENCHDIR}/${PREAMBLENAME}"
 #
-
-source  "${BASHDIR}/colorsource"
+#
+# source  "${BASHDIR}/colorsource"
+# in this script the above source one does not exist yet
+source  "${SCRIPTPATH}/colorsource"
 
 bashscripts () {
-    [[ -r "${CURRDIRATSTART}/colorsource" ]] && echo -e "${CURRDIRATSTART}/colorsource"
-    [[ -r "${CURRDIRATSTART}/colorit" ]] && echo -e "${CURRDIRATSTART}/colorit"
-    [[ -r "${CURRDIRATSTART}/colortest" ]] && echo -e "${CURRDIRATSTART}/colortest"
-    [[ -r "${CURRDIRATSTART}/testrinoh" ]] && echo -e "${CURRDIRATSTART}/testrinoh"
+    [[ -r "${SCRIPPATH}/colorsource" ]] && echo -e "${SCRIPPATH}/colorsource"
+    [[ -r "${SCRIPPATH}/colorit" ]] && echo -e "${SCRIPPATH}/colorit"
+    [[ -r "${SCRIPPATH}/colortest" ]] && echo -e "${SCRIPPATH}/colortest"
+    [[ -r "${SCRIPPATH}/testtogether" ]] && echo -e "${SCRIPPATH}/testtogether"
+    [[ -r "${SCRIPPATH}/testapart" ]] && echo -e "${SCRIPPATH}/testapart"
 }
 
 mapfile -t bashinstalls < <(bashscripts)
@@ -57,6 +61,13 @@ fi
 
 EOF
 
+
+# make each subdirectory unless it exists
+mkdir -p "${BASHDIR}"
+mkdir -p "${BENCHDIR}" 
+mkdir -p "${BENCHDIRMEDIA}"
+mkdir -p "${BENCHDIRPDFS}" 
+
 pnameit $(info "ABOUT ${MYPNAME}")
 pnameit $(info "------------------")
 pnameit $(info "This installs collateral tools useful for")
@@ -71,6 +82,7 @@ pnameit $(info "CONVENIENCE SCRIPTS")
 setpindent "    "
 pnameit $(info "Bash Scripts: (in" ) $(emph "${BASHDIR}") $(info ")") 
 setpindent "        "
+# copy scripts 
 for aname in "${bashinstalls[@]}"; do
     briefname=$(basename "${aname}")
     if [[ "${briefname}" == "colorsource" ]]; then
@@ -78,6 +90,7 @@ for aname in "${bashinstalls[@]}"; do
     else
 	pnameit $(colour "green" "${briefname}")
     fi	
+    $(cp "${SCRIPTPATH}/${briefname}" "${BASHDIR}/${briefname}")
 done 
 setpindent "    "
 pnameit $(info "Recommendation: code snippet to  \${HOME}/.profile:") 
@@ -85,7 +98,6 @@ setpindent "        "
 pnameit $(info 'Adding the code snippet at the bottom to .profile')
 pnameit $(info 'and our scripts will be in the search path.')
 setpindent "    "
-pnameit $(info ""setpindent "")
 pnameit $(info "BENCH TEST SETUP")
 setpindent "    "
 pnameit $(info "Bench Directory:") $(emph "${BENCHDIR}")
@@ -94,34 +106,26 @@ pnameit $(info "Bench Test Data")
 setpindent "        "
 pnameit $(info "Articles: (in" ) $(emph "${BENCHDIR}") $(info ")") 
 setpindent "            "
+# copy articles REPOARTICLESDIR to BENCHDIR
 for aname in "${articlenames[@]}"; do
-    pnameit "${aname}"    
+    briefname=$(basename "${aname}")
+    pnameit "${aname}"
+    $(cp "${REPOARTICLESDIR}/${briefname}" "${BENCHDIR}/${briefname}")
 done
 
 setpindent "        "
 pnameit  $(info "Media: (in") $(emph "${BENCHDIRMEDIA}") $(info ")") 
 setpindent "            "
+# copy media REPOMEDIADIR to BENCHDIRMEDIA
 for aname in "${mediafiles[@]}"; do
     briefname=$(basename "${aname}")
     pnameit $(colour "magenta" "${briefname}")
+    $(cp "${REPOMEDIADIR}/${briefname}" "${BENCHDIRMEDIA}/${briefname}")
 done
 resetpindent
 resetindent
 for item in "${rinohpath[@]}" ; do
     printit $(colour "magenta" "${item}")    
-done
-exit 0
-
-
-for anm in "${bashinstalls[@]}"; do
-    mybasename=${anm##*/}
-    # mybasenamenoext=${mybasename%.*}
-    pnameit $(code "${anm}") $(emph '->')  $(colour "green" "${BASHDIR}/${mybasename}")
-    if [[ -r "${BASHDIR}/${mybasename}" ]] ; then
-    	chmod +w "${BASHDIR}/${mybasename}"
-    fi
-    cp "${anm}" "${BASHDIR}/${mybasename}"
-    chmod a-w "${BASHDIR}/${mybasename}"
 done
 
 
