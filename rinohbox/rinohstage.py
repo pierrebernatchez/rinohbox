@@ -15,10 +15,8 @@ import importlib.resources as resources
 from pathlib import Path
 import re
 
-DEFAULT_BOXDIR=Path("/tmp/rinohstage")
+DEFAULT_STAGINGDIR=Path("/tmp/rinohstage")
 PROGNAME=os.path.basename(__file__)
-
-
 
 SAFEPRIFIX="rinohb"
 SAFESUFFIX="dblchk"
@@ -84,7 +82,7 @@ def do_newstage():
     return fullstage
 
 def newstage():
-    """Entry point for creating a new rinohbox staging area directory"""
+    """ENTRYPOINT  for creating a new rinohbox staging area directory"""
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
     if len(sys.argv) > 1:
@@ -94,7 +92,7 @@ def newstage():
     exit(0)
 
 def clearstage():
-    """Remove all but what files and directories it began with from staging directory."""
+    """ENTRYPOINT Remove all but what files and directories it began with from staging directory."""
     parser = argparse.ArgumentParser()
     parser.add_argument('stagingdir', nargs=1, help='Rinoh RST Staging directory to clean up.')
     args = parser.parse_args()
@@ -123,7 +121,7 @@ def safestagedir(tmpboxdir):
         return False
     
 def saferemovestage():
-    """Recursively removes a staging directory.  But its name must match prefix and suffix."""
+    """ENTRYPOINT Recursively removes a staging directory.  But its name must match prefix and suffix."""
     parser = argparse.ArgumentParser()
     parser.add_argument('stagingdir', nargs=1, help='an existing rinoh staging directory.')
     args = parser.parse_args()
@@ -145,7 +143,7 @@ def copy_no_meta(src, dst):
             if not re.match(r'^:.*:', line): # the ^ is unnecessary in this context, but does not hurt
                 fout.write(line)
 
-def emit_index_and_rstfiles(list_rstfiles, preamble="", sandbox=DEFAULT_BOXDIR):
+def emit_index_and_rstfiles(list_rstfiles, preamble="", stagingdir=DEFAULT_STAGINGDIR):
     """Emit an index.rst file with an include for each file and emit each file with metatags stripped"""
     boxpath=Path(sandbox)
     incls = [ f"include={a}.rst" for a in list_rstfiles ]
@@ -165,38 +163,6 @@ def emit_index_and_rstfiles(list_rstfiles, preamble="", sandbox=DEFAULT_BOXDIR):
         copy_no_meta(afullsource, afulldest)        
     return
                 
-
-def renderinit(list_rstfiles, # source rst file full paths 
-               preamble="", # Preamble for the index.rst file.
-               sandbox=DEFAULT_BOXDIR):
-    """Funcion  poputates a rinohbox with .rst files to be rendered and the index.rst that includes them."""
-    # emit the index.rst file
-    default_boxdir=Path("/tmp/rinohbox")
-    parser = argparse.ArgumentParser(description='Initialize a rinoh sandbox directory')
-    parser.add_argument('-t', '--target',
-                        default=default_boxdir,
-                        dest="target",
-                        help=f"Path to target directory to serve as a sandbox (Dflt {default_boxdir})")
-    parser.add_argument('-o','--overwrite',
-                        action='store_true',
-                        dest='overwrite',
-                        help='Re-initialize target directory if it already exists.')
-    
-    args = parser.parse_args()
-    targetdir = Path(args.target)
-    if targetdir.is_dir():
-        if args.overwrite:
-            print(f"Removing existing tree: {targetdir}", file=sys.stderr)
-            shutil.rmtree(targetdir)
-        else:
-            print(f"File {targetdir} already exists, and no --overwrite. ABORTING.", file=sys.stderr)
-            exit( 1 )
-    targetdir.mkdir()
-    fulltarget = targetdir.resolve()
-    transfer(fulltarget)    
-    print(f"{fulltarget}")
-    exit(0)
-
 def validated_args(myargs):
     """Trim list to only readable files with names ending in '.rst'"""
     def rst_and_readable_but_not_index_files():
@@ -213,14 +179,15 @@ def validated_args(myargs):
             print(f"{__file__}: Ignored: {afile}", file=sys.stderr)
     return valids
 
-def render():
-    """Our job is to copy all our articles.rst files to the sandbox.
-    While doing so we must filter out all the meta data.  We
-    also need to make up an index.rst file by appending include
+def setstage():
+    """ENTRYPOINT
+    Our job is to copy all our articles.rst files to the staging
+    directory.  While doing so we must filter out all the meta data.
+    We also need to make up an index.rst file by appending include
     statements - one for each copied file - to any preamble we have
-    been given.  Then we write the index.rst file to the sandbox too.
-    In short we set up a staging area for rendering a .pdf file using
-    Sphinx and rinoh on top of docutils.
+    been given.  Then we write the index.rst file to the staging
+    directory too.  In short we set up a staging area for rendering a
+    .pdf file using Sphinx and rinoh on top of docutils.
     """
     curdir = Path('.').resolve()
     curbase = os.path.basename(curdir)
@@ -229,8 +196,8 @@ def render():
     dflt_target= dirname / Path( f"{curbase}-pdfs")
     parser = argparse.ArgumentParser()
     parser.add_argument('rstfiles', nargs='*', help='RST files to process.')
-    parser.add_argument('-b', '--boxpath', dest="boxpath", required=True,
-                        help=f'Sandbox to use (as returned by newrinoh).')
+    parser.add_argument('-s', '--stageingpath', dest="stagingpath", required=True,
+                        help=f'staging directory to use (as returned by newrstage).')
     parser.add_argument('-m', '--media', default=dflt_media, dest="media",
                         help=f'Where to get media files from (dflt {dflt_media}).')
     parser.add_argument('-t', '--target', default=dflt_target, dest="target",
@@ -238,10 +205,14 @@ def render():
     parser.add_argument('-p', '--preamble', dest='preamble',
                         help=f"File containing preamble text for index.rst file (dflt None)")
     args = parser.parse_args()
-    mytemp = args.boxpath
-    print(f"{mytemp}")
-    
-    
+    mystage = args.stageingpath
+    # the convention is to print the path name to return it to the invoking shell program
+    if safestagedir(mystage):
+        pass
+    else:
+        print(f"{PROGNAME}: Invalid rinoh staging directory: {mystage}", file=sys.stderr)
+        print(f"Invalid rinoh staging directory: {mystage}")
+        exit(1)
     if len(args.rstfiles) == 0:
         myargs = sorted([str(p) for p in Path('.').glob('*.rst')])
         valid_args= validated_args(myargs)
@@ -249,23 +220,33 @@ def render():
         valid_args= validated_args(args.rstfiles)
     if args.preamble is None:
         preamble = ""
-        valid_args = [ Path(af).resolve() for af in valid_args ]        
+        print(f"{PROGNAME}: No Preamble.", file=sys.stderr)
+        valid_args = [ Path(af).resolve() for af in valid_args ] # no preamble.rst file to drop
     else:
         preamblefile = Path(args.preamble).resolve()
-        # if necessary drop the preamble file from the ones we will include in the render
+        # if necessary drop the preamble filename from the ones to include in the render
         valid_args = [Path(af).resolve() for af in valid_args
                       if not os.path.samefile(Path(af).resolve(),  preamblefile)]
         with open(preamblefile, "r") as pfile:
             preamble = pfile.read()
+        # Log the preamble we used for debug purposes.
         print(f"{PROGNAME}: Preamble: BEGIN", file=sys.stderr)
         print(f"{preamble}{PROGNAME}: Preamble: END", file=sys.stderr)
-        print(f"{PROGNAME}: Media from: {args.media}", file=sys.stderr)
-        print(f"{PROGNAME}: Results to: {args.target}", file=sys.stderr)
-        if len(valid_args) == 0 :
-            print(f"{PROGNAME}: Nothing to render.", file=sys.stderr)
-        else:
-            for anrst in valid_args:
-                print(f"{PROGNAME}: {anrst}", file=sys.stderr)
+    print(f"{PROGNAME}: Media from: {args.media}", file=sys.stderr)
+    print(f"{PROGNAME}: Results to: {args.target}", file=sys.stderr)
+    if len(valid_args) == 0 :
+        print(f'{PROGNAME}Nothing to render. Leaving the directory "{mystage}" intact.', file=sys.stderr)
+        print(f'Nothing to render. Leaving the directory "{mystage}" intact.')
+        exit(1)
+    else:
+        # Log the .rst file names 
+        for anrst in valid_args:
+            # Log each inpput .rst file name for debug info
+            print(f"{PROGNAME}: {anrst}", file=sys.stderr)
+        # emit_index_and_rstfiles(valid_argss, preamble="preamble", stagingdir=mystage)
+        # Report success
+        print(f"{PROGNAME}: {mystage} is ready to render.", file=sys.stderr)
+        print(f'{mystage}')
         
 
 script_name = os.path.basename(__file__)
