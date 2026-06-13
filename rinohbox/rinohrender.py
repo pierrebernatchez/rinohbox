@@ -91,7 +91,14 @@ def validated_args(myargs):
     return valids
 
 def render():
-    """Composes list of '.rst' files and renders them into individual or a single '.pdf' file(s)"""
+    """Our job is to copy all our articles.rst files to the sandbox.
+    While doing so we must filter out all the meta data.  We
+    also need to make up an index.rst file by appending include
+    statements - one for each copied file - to any preamble we have
+    been given.  Then we write the index.rst file to the sandbox too.
+    In short we set up a staging area for rendering a .pdf file using
+    Sphinx and rinoh on top of docutils.
+    """
     curdir = Path('.').resolve()
     curbase = os.path.basename(curdir)
     dirname = curdir.parent
