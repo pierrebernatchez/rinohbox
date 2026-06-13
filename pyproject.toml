@@ -13,7 +13,7 @@ dynamic = ["version", "description"]
 Home = "http://www.bernatchez.net/index.html"
 
 [project.scripts]
-newrinoh = "rinohbox.rinohstage:newstage"
-rmrinoh = "rinohbox.rinohstage:saferemovestage"
-clearrinoh = "rinohbox.rinohstage:clearstage"
-renderrinoh = "rinohbox.rinohrender:render"
+newstage = "rinohbox.rinohstage:newstage"
+rmstage = "rinohbox.rinohstage:saferemovestage"
+clearstage = "rinohbox.rinohstage:clearstage"
+setstage = "rinohbox.rinohrender:render"

@@ -65,7 +65,7 @@ def do_clearstage(staging):
                 pass
         elif entry.is_dir(follow_symlinks=False):
             shutil.rmtree(entry.path)
-        else
+        else:
             os.remove(entry.path)
     return staging
 
@@ -83,7 +83,7 @@ def newstage():
     args = parser.parse_args()
     if len(sys.argv) > 1:
         parser.error("This command takes no arguments")    
-    stagedir== do_newstage()
+    stagedir= do_newstage()
     print(f"{stagedir}")
     exit(0)
 
@@ -92,7 +92,7 @@ def clearstage():
     parser = argparse.ArgumentParser()
     parser.add_argument('stagingdir', nargs=1, help='Rinoh RST Staging directory to clean up.')
     args = parser.parse_args()
-    requested_dir = args.stagingdirr[0]
+    requested_dir = args.stagingdir[0]
     if safestagedir(requested_dir) :
         target = do_clearstage(requested_dir)
         print(f"{target}")
