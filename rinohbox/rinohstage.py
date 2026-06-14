@@ -142,21 +142,21 @@ def copy_no_meta(src, dst):
         for line in fin:
             if not re.match(r'^:.*:', line): # the ^ is unnecessary in this context, but does not hurt
                 fout.write(line)
-
+ 
 def emit_index_and_rstfiles(list_rstfiles, preamble="", stagingdir=DEFAULT_STAGINGDIR):
     """Emit an index.rst file with an include for each file and emit each file with metatags stripped"""
-    boxpath=Path(sandbox)
+    stagepath=Path(stagingdir)
     incls = [ f"include={a}.rst" for a in list_rstfiles ]
     preamble_with_incls = [preamble] + incls
     preamble_with_incls.append("") # so that we get a trailing newline with join
     includeblock = "\n".join(preamble_with_incls)
-    indexpath = boxpath / Path("index.rst")
+    indexpath = stagepath / Path("index.rst")
     indexpath.write_text(includeblock)
     # hard link every source file into the sandbox
     for afull in list_rstfiles:
         abasename = os.path.basename(f"{afull}")
         afullsource = Path(afull)
-        afulldest = boxpath / Path(abasename)
+        afulldest = stagepath / Path(abasename)
         afulldest.resolve()
         afullsource.resolve()
         print("{__file__}: {afullsource} -> {afulldest}",file=sys.stderr)
@@ -196,7 +196,7 @@ def setstage():
     dflt_target= dirname / Path( f"{curbase}-pdfs")
     parser = argparse.ArgumentParser()
     parser.add_argument('rstfiles', nargs='*', help='RST files to process.')
-    parser.add_argument('-s', '--stageingpath', dest="stagingpath", required=True,
+    parser.add_argument('-s', '--stagingpath', dest="stagingpath", required=True,
                         help=f'staging directory to use (as returned by newrstage).')
     parser.add_argument('-m', '--media', default=dflt_media, dest="media",
                         help=f'Where to get media files from (dflt {dflt_media}).')
@@ -205,7 +205,7 @@ def setstage():
     parser.add_argument('-p', '--preamble', dest='preamble',
                         help=f"File containing preamble text for index.rst file (dflt None)")
     args = parser.parse_args()
-    mystage = args.stageingpath
+    mystage = args.stagingpath
     # the convention is to print the path name to return it to the invoking shell program
     if safestagedir(mystage):
         pass
@@ -243,7 +243,7 @@ def setstage():
         for anrst in valid_args:
             # Log each inpput .rst file name for debug info
             print(f"{PROGNAME}: {anrst}", file=sys.stderr)
-        # emit_index_and_rstfiles(valid_argss, preamble="preamble", stagingdir=mystage)
+        emit_index_and_rstfiles(valid_args, preamble=preamble, stagingdir=mystage)
         # Report success
         print(f"{PROGNAME}: {mystage} is ready to render.", file=sys.stderr)
         print(f'{mystage}')

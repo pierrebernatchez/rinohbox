@@ -26,7 +26,7 @@ pushd ${BENCHDIR} >/dev/null
 
 ## the article the bench test will render
 TESTARTICLE="${BENCHDIR}/sampl-calp003-en.rst"
-ERRLOGS=("${BENCHDIRPDFS}/newrinoh.errlog" "${BENCHDIRPDFS}/renderrinoh.errlog" "${BENCHDIRPDFS}/rmrinoh.errlog"  ) 
+ERRLOGS=("${BENCHDIRPDFS}/newstage.errlog" "${BENCHDIRPDFS}/setstage.errlog" "${BENCHDIRPDFS}/rmstage.errlog"  ) 
 source  ${BASHDIR}/colorsource
 pnameit $(info "#####################################################################")
 pnameit $(info "Bench Test") $(date "--rfc-3339=seconds")
@@ -39,23 +39,23 @@ pnameit $(info "using target:" ) $(code "${BENCHDIRPDFS}")
 pnameit $(info "---------------------------------------------------------------------")
 #
 # make a staging directory
-pnameit $(code "newrinoh")
-stagedir=$(newrinoh 2> "${BENCHDIRPDFS}/newrinoh.errlog")
-pnameit $(code "renderrinoh" "-b" "${stagedir}" "-p" "PREAMBLE" "-m" "MEDIA" "-t" "TARGET" "ARTICLE")
-renderresult=$(renderrinoh "-b" "${stagedir}" "-p" "${BENCHPREAMBLE}" "-m" "${BENCHDIRMEDIA}" "-t" "${BENCHDIRPDFS}" "${TESTARTICLE}" 2> "${BENCHDIRPDFS}/renderrinoh.errlog")
-pnameit $(code "rmrinoh" "${stagedir}")
-rmresult=$(rmrinoh "${stagedir}" 2> "${BENCHDIRPDFS}/rmrinoh.errlog")
+pnameit $(code "newstage")
+stagedir=$(newstage 2> "${BENCHDIRPDFS}/newstage.errlog")
+pnameit $(code "setstage" "-b" "${stagedir}" "-p" "PREAMBLE" "-m" "MEDIA" "-t" "TARGET" "ARTICLE")
+renderresult=$(setstage "-s" "${stagedir}" "-p" "${BENCHPREAMBLE}" "-m" "${BENCHDIRMEDIA}" "-t" "${BENCHDIRPDFS}" "${TESTARTICLE}" 2> "${BENCHDIRPDFS}/setstage.errlog")
+# pnameit $(code "rmstage" "${stagedir}")
+# rmresult=$(rmstage "${stagedir}" 2> "${BENCHDIRPDFS}/rmstage.errlog")
 pnameit $(info "---------------------------------------------------------------------")
 if [[ "${renderresult}" == "${stagedir}" ]] ; then
-    pnameit $(info "renderrinoh: confirm result matches  --boxpath argument")
+    pnameit $(info "setstage: confirm result matches  --boxpath argument")
 else
-    pnameit $(fatal "renderrinoh: FAILED to confirm result matches  --boxpath argument")
+    pnameit $(fatal "setstage: FAILED to confirm result matches  --boxpath argument")
 fi
-#rmresult=$(rmrinoh "${stagedir}" 2> "${BENCHDIRPDFS}/rmrinoh.errlog")
+#rmresult=$(rmstage "${stagedir}" 2> "${BENCHDIRPDFS}/rmstage.errlog")
 if [[ "${rmresult}" == "${stagedir}" ]] ; then
-    pnameit $(info "rmrinoh: confirm result matches  argument")
+    pnameit $(info "rmstage: confirm result matches  argument")
 else
-    pnameit $(fatal "rmrinoh: FAIL to confirm result matches argument")
+    pnameit $(fatal "rmstage: FAIL to confirm result matches argument")
 fi
 pnameit $(info "${stagedir} has been successfully removed")
 pnameit $(info "stderr logs:")
