@@ -1,7 +1,7 @@
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 
-from rst_editor_template import make_article
+from rinoh_article_template import make_article
 
 project   = ""
 author    = ""

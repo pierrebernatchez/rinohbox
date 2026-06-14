@@ -8,9 +8,9 @@ Sampl Calculus Problem 002
 :category: calculus
 :authors: Jane Doe
 :summary: Sampl Calculus Problem 002
-:fcopyright: Copyright © 2026 John Doe—All rights reserved.
+:fcopyright: Copyright © 2026 Jane Doe—All rights reserved.
 
-.. footer:: Copyright |copy| 2026 Jane Doe |---| All rights reserved.
+.. footer:: Copyright © 2026 Jane Doe—All rights reserved.
 
 .. |cylindre| image:: ../images/samcylindre.png
    :height: 192

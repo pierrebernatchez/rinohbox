@@ -146,7 +146,9 @@ def copy_no_meta(src, dst):
 def emit_index_and_rstfiles(list_rstfiles, preamble="", stagingdir=DEFAULT_STAGINGDIR):
     """Emit an index.rst file with an include for each file and emit each file with metatags stripped"""
     stagepath=Path(stagingdir)
-    incls = [ f"include={a}.rst" for a in list_rstfiles ]
+    ipaths= [ stagepath / Path(ap).name  for ap in list_rstfiles ] 
+    stagepath / Path(a).name
+    incls = [ f"include={a}" for a in ipaths ]
     preamble_with_incls = [preamble] + incls
     preamble_with_incls.append("") # so that we get a trailing newline with join
     includeblock = "\n".join(preamble_with_incls)

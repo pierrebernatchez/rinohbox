@@ -8,9 +8,9 @@ Sampl Calculus Problem 003
 :category: calculus
 :authors: Jane Doe
 :summary: Sampl Calculus Problem 003
-:fcopyright: Copyright © 2026 John Doe—All rights reserved.
+:fcopyright: Copyright © 2026 Julius Doe—All rights reserved.
 
-.. footer:: Copyright |copy| 2026 Jane Doe |---| All rights reserved.
+.. footer:: Copyright © 2026 Julius Doe—All rights reserved.
 
 Consider a function :math:`f(x)`. The line :math:`L_1` with equation :math:`y = 3x + 1` is tangent to the graph of :math:`f(x)` when :math:`x = 2`.
 

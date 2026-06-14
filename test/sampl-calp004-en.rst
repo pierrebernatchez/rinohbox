@@ -8,9 +8,9 @@ Sampl Calculus Problem 004
 :category: calculus
 :authors: Jane Doe
 :summary: Calculus Problem 4
-:fcopyright: Copyright © 2026 John Doe—All rights reserved.
+:fcopyright: Copyright © 2026 Joan Doe—All rights reserved.
 
-.. footer:: Copyright |copy| 2026 Jane Doe |---| All rights reserved.
+.. footer:: Copyright © 2026 Joan Doe—All rights reserved.
 
 .. |temp_cos_wave| image:: ../images/samtemp_cos_wave.png
    :scale: 60%

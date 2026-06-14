@@ -1,5 +1,10 @@
-.. |copy| unicode:: 0xA9
+yo mama
+#######
 
-.. |---| unicode:: U+02014
-  :trim:
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+   :caption: My contents are better than your contents:
+
+	     
 

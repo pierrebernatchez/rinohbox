@@ -8,9 +8,9 @@ Sampl Calculus Problem 001
 :category: calculus
 :authors: Jane Doe
 :summary: Sampl Calculus Problem 001
-:fcopyright: Copyright © 2026 John1 Doe—All rights reserved.
+:fcopyright: Copyright © 2026 John Doe—All rights reserved.
  
-.. footer:: Copyright © 2026 John1 Doe—All rights reserved.
+.. footer:: Copyright © 2026 John Doe—All rights reserved.
 	    
 .. image:: ../images/samfigure_x1.png
    :scale: 60

@@ -32,7 +32,9 @@ The process of rendering a list of one or more .rst files consists of
    index.rst in the stage too.  The transferring process filters out
    metadata from the input .rst files
 
-3 .Invoking rinoh_build using that stage directory  as its source and the 'out' subdirectory as its output dirctory.
+3. Invoking "sphinx-build -b rinoh" the stage directory  as its source and the 'out' subdirectory as its output.
+   E.G. "sphinx-build -b rinoh /tmp/rinohbxxxxx /tmp/rinohbxxxxx/out" 
+
 
 4. Extracting resulting pdfs from the 'out' directory (creating hard links to its .pdf files in some target directory).
 
