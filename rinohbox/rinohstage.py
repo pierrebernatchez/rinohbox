@@ -61,17 +61,33 @@ def rmtree_keep_root(path):
  
 def do_clearstage(staging):
     """Clean out an existing staging area but leave the original stuff as it was"""
+    # keepers under the staging directory
     keepers=(
-        "source",
         "output",
         "images",
-        "source",
+        "source")
+    # keepers under source subdirectory
+    source_keepers=(
         "_templates",
         "_static",
         "conf.py",
         "rinoh_article_template.py")
+    # We keep keeper directories but (exept for source) we remove their contents
     for entry in os.scandir(staging):
         if entry.name in keepers:
+            if entry.name == "source":
+                pass
+            elif entry.is_dir(follow_symlinks=False): 
+                rmtree_keep_root(entry.path)
+            else:
+                pass # skip regular files (if ever we add some to keepers list)
+        elif entry.is_dir(follow_symlinks=False):
+            shutil.rmtree(entry.path)
+        else:
+            os.remove(entry.path)
+    staging_source = Path(staging) / "source"
+    for entry in os.scandir(staging_source):
+        if entry.name in source_keepers:
             if entry.is_dir(follow_symlinks=False):
                 rmtree_keep_root(entry.path)
             else:
