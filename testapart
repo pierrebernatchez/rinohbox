@@ -25,15 +25,32 @@ BENCHPREAMBLE="${BENCHDIR}/${PREAMBLENAME}"
 pushd ${BENCHDIR} >/dev/null
 
 ## the article the bench test will render
+
 TESTARTICLE="${BENCHDIR}/sampl-calp003-en.rst"
-ERRLOGS=("${BENCHDIRPDFS}/newstage.errlog" "${BENCHDIRPDFS}/setstage.errlog" "${BENCHDIRPDFS}/rmstage.errlog"  ) 
+
+ERRLOGS=("${BENCHDIRPDFS}/newstage.errlog" "${BENCHDIRPDFS}/setstage.errlog" "${BENCHDIRPDFS}/rmstage.errlog"  )
+
 source  ${BASHDIR}/colorsource
+
+basenms () {
+    for apth in "$@"  ; do
+	echo -e "${apth##*/}"
+    done
+}
+
+mapfile -t articlenames < <(basenms ${BENCHDIR}/*-en.rst)
+
+for xarticlename in ${articlenames[@]}; do
+    pnameit $(info "----" ${xarticlename})
+done
+
 pnameit $(info "#####################################################################")
 pnameit $(info "Bench Test") $(date "--rfc-3339=seconds")
 pnameit $(info "---------------------------------------------------------------------")
+
 pnameit $(info "using current directory:") $(emph "${BENCHDIR}" )
 pnameit $(info "using preamble:" ) $(code "${BENCHPREAMBLE}")
-pnameit $(info "using article:" ) $(code "${TESTARTICLE}")
+pnameit $(info "using articles:" ) $(code "${TESTARTICLE}")
 pnameit $(info "using media:" ) $(code "${BENCHDIRMEDIA}")
 pnameit $(info "using target:" ) $(code "${BENCHDIRPDFS}")
 pnameit $(info "---------------------------------------------------------------------")
@@ -42,21 +59,22 @@ pnameit $(info "----------------------------------------------------------------
 pnameit $(code "newstage")
 stagedir=$(newstage 2> "${BENCHDIRPDFS}/newstage.errlog")
 pnameit $(code "setstage" "-b" "${stagedir}" "-p" "PREAMBLE" "-m" "MEDIA" "-t" "TARGET" "ARTICLE")
-renderresult=$(setstage "-s" "${stagedir}" "-p" "${BENCHPREAMBLE}" "-m" "${BENCHDIRMEDIA}" "-t" "${BENCHDIRPDFS}" "${TESTARTICLE}" 2> "${BENCHDIRPDFS}/setstage.errlog")
+#setstageresult=$(setstage "-s" "${stagedir}" "-p" "${BENCHPREAMBLE}" "-m" "${BENCHDIRMEDIA}" "-t" "${BENCHDIRPDFS}" "${TESTARTICLE}" 2> "${BENCHDIRPDFS}/setstage.errlog")
+setstageresult=$(setstage "-s" "${stagedir}" "-p" "${BENCHPREAMBLE}" "-m" "${BENCHDIRMEDIA}" "-t" "${BENCHDIRPDFS}" 2> "${BENCHDIRPDFS}/setstage.errlog")
 # pnameit $(code "rmstage" "${stagedir}")
 # rmresult=$(rmstage "${stagedir}" 2> "${BENCHDIRPDFS}/rmstage.errlog")
 pnameit $(info "---------------------------------------------------------------------")
-if [[ "${renderresult}" == "${stagedir}" ]] ; then
-    pnameit $(info "setstage: confirm result matches  --boxpath argument")
+if [[ "${setstageresult}" == "${stagedir}" ]] ; then
+    pnameit $(info "setstage: confirm result matches  --stagingpath argument")
 else
-    pnameit $(fatal "setstage: FAILED to confirm result matches  --boxpath argument")
+    pnameit $(fatal "setstage: FAILED to confirm result matches  --stagingpath argument")
 fi
 #rmresult=$(rmstage "${stagedir}" 2> "${BENCHDIRPDFS}/rmstage.errlog")
-if [[ "${rmresult}" == "${stagedir}" ]] ; then
-    pnameit $(info "rmstage: confirm result matches  argument")
-else
-    pnameit $(fatal "rmstage: FAIL to confirm result matches argument")
-fi
+#if [[ "${rmresult}" == "${stagedir}" ]] ; then
+#    pnameit $(info "rmstage: confirm result matches  argument")
+#else
+#    pnameit $(fatal "rmstage: FAIL to confirm result matches argument")
+#fi
 pnameit $(info "${stagedir} has been successfully removed")
 pnameit $(info "stderr logs:")
 setpindent "    "

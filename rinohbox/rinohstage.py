@@ -40,7 +40,13 @@ def preparestage(stagedir):
     subdir= stagedir / "_templates"
     print(f"Making directory: {subdir}", file=sys.stderr)
     subdir.mkdir()
-    subdir= stagedir / "out"
+    subdir= stagedir / "output"
+    print(f"Making directory: {subdir}", file=sys.stderr)
+    subdir.mkdir()
+    subdir= stagedir / "source"
+    print(f"Making directory: {subdir}", file=sys.stderr)
+    subdir.mkdir()
+    subdir= stagedir / "images"
     print(f"Making directory: {subdir}", file=sys.stderr)
     subdir.mkdir()
     return
@@ -56,10 +62,13 @@ def rmtree_keep_root(path):
 def do_clearstage(staging):
     """Clean out an existing staging area but leave the original stuff as it was"""
     keepers=(
+        "source",
+        "output",
+        "images",
+        "source",
         "_templates",
         "_static",
         "conf.py",
-        "out",
         "rinoh_article_template.py")
     for entry in os.scandir(staging):
         if entry.name in keepers:
@@ -146,8 +155,8 @@ def copy_no_meta(src, dst):
 def emit_index_and_rstfiles(list_rstfiles, preamble="", stagingdir=DEFAULT_STAGINGDIR):
     """Emit an index.rst file with an include for each file and emit each file with metatags stripped"""
     stagepath=Path(stagingdir)
-    ipaths= [ stagepath / Path(ap).name  for ap in list_rstfiles ] 
-    incls = [ f"include={a}" for a in ipaths ]
+    inames= [ Path(ap).stem  for ap in list_rstfiles ] 
+    incls = [ f"    {a}" for a in inames ]
     preamble_with_incls = [preamble] + incls
     preamble_with_incls.append("") # so that we get a trailing newline with join
     includeblock = "\n".join(preamble_with_incls)
