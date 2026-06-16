@@ -25,21 +25,6 @@ def preparestage(stagedir):
     subdirectory and transfer the .py files it needs there.
     The .py files are pulled out of the rinohbox package library.
     """ 
-    src = resources.files('rinohbox') # / 'conf.py'
-    conf_file_src = src / 'rinohconf.py'
-    conf_file_dst = stagedir / 'conf.py'
-    temp_file_src = src / 'rinoh_article_template.py'
-    temp_file_dst = stagedir / 'rinoh_article_template.py'
-    print(f"src={conf_file_src} dest={conf_file_dst}", file=sys.stderr)
-    shutil.copy(conf_file_src, conf_file_dst)
-    print(f"src={temp_file_src} dest={temp_file_dst}", file=sys.stderr)
-    shutil.copy(temp_file_src, temp_file_dst)
-    subdir= stagedir / "_static"
-    print(f"Making directory: {subdir}", file=sys.stderr)
-    subdir.mkdir()
-    subdir= stagedir / "_templates"
-    print(f"Making directory: {subdir}", file=sys.stderr)
-    subdir.mkdir()
     subdir= stagedir / "output"
     print(f"Making directory: {subdir}", file=sys.stderr)
     subdir.mkdir()
@@ -49,6 +34,21 @@ def preparestage(stagedir):
     subdir= stagedir / "images"
     print(f"Making directory: {subdir}", file=sys.stderr)
     subdir.mkdir()
+    subdir= stagedir / "source" / "_static"
+    print(f"Making directory: {subdir}", file=sys.stderr)
+    subdir.mkdir()
+    subdir= stagedir / "source" / "_templates"
+    print(f"Making directory: {subdir}", file=sys.stderr)
+    subdir.mkdir()
+    src = resources.files('rinohbox') #
+    conf_file_src = src / 'rinohconf.py'
+    conf_file_dst = stagedir / "source" / 'conf.py'
+    temp_file_src = src / 'rinoh_article_template.py'
+    temp_file_dst = stagedir / "source" / 'rinoh_article_template.py'
+    print(f"src={conf_file_src} dest={conf_file_dst}", file=sys.stderr)
+    shutil.copy(conf_file_src, conf_file_dst)
+    print(f"src={temp_file_src} dest={temp_file_dst}", file=sys.stderr)
+    shutil.copy(temp_file_src, temp_file_dst)
     return
 
 def rmtree_keep_root(path):
