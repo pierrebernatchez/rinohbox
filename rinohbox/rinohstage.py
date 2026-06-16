@@ -243,7 +243,7 @@ def setstage():
     images = [img for img in Path(args.media).glob('*')]
     for imgfile in images:
         dst = imagesdir / imgfile.name
-        src = imagfile.path
+        src = imgfile.path
         dst.unlink(missing_ok=True)
         dst.hardlink_to(src)
     
