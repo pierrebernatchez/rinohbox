@@ -239,6 +239,14 @@ def setstage():
         print(f"{PROGNAME}: Invalid rinoh staging directory: {mystage}", file=sys.stderr)
         print(f"Invalid rinoh staging directory: {mystage}")
         exit(1)
+    imagesdir = Path(mystage) / "images"
+    images = [img for img in Path(args.media).glob('*')]
+    for imgfile in images:
+        dst = imagesdir / imgfile.name
+        src = imagfile.path
+        dst.unlink(missing_ok=True)
+        dst.hardlink_to(src)
+    
     if len(args.rstfiles) == 0:
         myargs = sorted([str(p) for p in Path('.').glob('*.rst')])
         valid_args= validated_args(myargs)
