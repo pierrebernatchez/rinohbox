@@ -30,7 +30,4 @@ The figure is not to scale.
 
    That is, :math:`\int_1^2 \! (6x^2-3x) \, \mathrm{d}x`.
 
-.. pagebreak::
-
-This is on another page
    
