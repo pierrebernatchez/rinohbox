@@ -181,7 +181,6 @@ def emit_index_and_rstfiles(list_rstfiles, preamble=None, stagingdir=DEFAULT_STA
    :hidden:
    :maxdepth: 2
    :caption: contents:
-
     """
     if preamble is None:
         mypreamble = default_preamble
@@ -244,6 +243,8 @@ def setstage():
     parser.add_argument('rstfiles', nargs='*', help='RST files to process.')
     parser.add_argument('-s', '--stagingpath', dest="stagingpath", required=True,
                         help=f'staging directory to use (as returned by newrstage).')
+    parser.add_argument('-l', '--lang', choices=["en","fr","es"], default="en",
+                        help=f'language specific .rst files to glob for  (default en).')
     parser.add_argument('-m', '--media', default=dflt_media, dest="media",
                         help=f'Where to get media files from (dflt {dflt_media}).')
     parser.add_argument('-t', '--target', default=dflt_target, dest="target",
@@ -268,7 +269,7 @@ def setstage():
         dst.hardlink_to(src)\
 
     if len(args.rstfiles) == 0:
-        myargs = sorted([str(p) for p in Path('.').glob('*.rst')])
+        myargs = sorted([str(p) for p in Path('.').glob(f'*-{args.lang}.rst')])
         valid_args= validated_args(myargs)
     else:
         valid_args= validated_args(args.rstfiles)
