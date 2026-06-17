@@ -273,7 +273,7 @@ def setstage():
     else:
         valid_args= validated_args(args.rstfiles)
     if args.preamble is None:
-        preamble = ""
+        preamble = None
         print(f"{PROGNAME}: No Preamble.", file=sys.stderr)
         valid_args = [ Path(af).resolve() for af in valid_args ] # no preamble.rst file to drop
     else:
