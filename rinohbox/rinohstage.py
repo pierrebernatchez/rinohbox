@@ -182,15 +182,17 @@ def emit_index_and_rstfiles(list_rstfiles, preamble="", stagingdir=DEFAULT_STAGI
     includeblock = "\n".join(preamble_with_incls)
     indexpath = stagepath / Path("index.rst")
     indexpath.write_text(includeblock)
-    # hard link every source file into the sandbox
-    for afull in list_rstfiles:
+    # filter every source file into the sandbox appending pagebreak on all but the last one
+    mypairs = [ (afile, "\n\n.. pagebreak::\n") for afile in list_rstfiles ]
+    mypairs[-1] = (mypairs[-1][0], None) # dont want a pagebreak on last one
+    for afull, abreak  in mypairs:
         abasename = os.path.basename(f"{afull}")
         afullsource = Path(afull)
-        afulldest = stagepath / Path(abasename)
+        afulldest = stagepath / "source" / Path(abasename)
         afulldest.resolve()
         afullsource.resolve()
         print("{__file__}: {afullsource} -> {afulldest}",file=sys.stderr)
-        copy_no_meta(afullsource, afulldest, pagebreak=".. pagebreak::\n")        
+        copy_no_meta(afullsource, afulldest, pagebreak=abreak)        
     return
                 
 def validated_args(myargs):
@@ -249,7 +251,17 @@ def setstage():
         dst = imagesdir / imgfile.name
         src = imgfile
         dst.unlink(missing_ok=True)
-        dst.hardlink_to(src)
+        dst.hardlink_to(src)\
+
+    default_preamble="""Default Preamble
+*****************************
+
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+   :caption: contents:
+
+    """
     
     if len(args.rstfiles) == 0:
         myargs = sorted([str(p) for p in Path('.').glob('*.rst')])
