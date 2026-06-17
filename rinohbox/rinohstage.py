@@ -172,15 +172,29 @@ def copy_no_meta(src, dst, pagebreak=None):
             fout.write(pagebreak)
         # add a page break as the last line
  
-def emit_index_and_rstfiles(list_rstfiles, preamble="", stagingdir=DEFAULT_STAGINGDIR):
+def emit_index_and_rstfiles(list_rstfiles, preamble=None, stagingdir=DEFAULT_STAGINGDIR):
     """Emit an index.rst file with an include for each file and emit each file with metatags stripped"""
+    default_preamble="""Default Preamble
+*****************************
+
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+   :caption: contents:
+
+    """
+    if preamble is None:
+        mypreamble = default_preamble
+    else:
+        mypreamble = preamble
+    
     stagepath=Path(stagingdir)
     inames= [ Path(ap).stem  for ap in list_rstfiles ] 
     incls = [ f"   {a}" for a in inames ]
-    preamble_with_incls = [preamble] + incls
+    preamble_with_incls = [mypreamble] + incls
     preamble_with_incls.append("") # so that we get a trailing newline with join
     includeblock = "\n".join(preamble_with_incls)
-    indexpath = stagepath / Path("index.rst")
+    indexpath = stagepath / "source" /  Path("index.rst")
     indexpath.write_text(includeblock)
     # filter every source file into the sandbox appending pagebreak on all but the last one
     mypairs = [ (afile, "\n\n.. pagebreak::\n") for afile in list_rstfiles ]
@@ -191,7 +205,7 @@ def emit_index_and_rstfiles(list_rstfiles, preamble="", stagingdir=DEFAULT_STAGI
         afulldest = stagepath / "source" / Path(abasename)
         afulldest.resolve()
         afullsource.resolve()
-        print("{__file__}: {afullsource} -> {afulldest}",file=sys.stderr)
+        print(f"{__file__}: {afullsource} -> {afulldest}",file=sys.stderr)
         copy_no_meta(afullsource, afulldest, pagebreak=abreak)        
     return
                 
@@ -253,16 +267,6 @@ def setstage():
         dst.unlink(missing_ok=True)
         dst.hardlink_to(src)\
 
-    default_preamble="""Default Preamble
-*****************************
-
-.. toctree::
-   :hidden:
-   :maxdepth: 2
-   :caption: contents:
-
-    """
-    
     if len(args.rstfiles) == 0:
         myargs = sorted([str(p) for p in Path('.').glob('*.rst')])
         valid_args= validated_args(myargs)
