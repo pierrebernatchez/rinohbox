@@ -58,8 +58,8 @@ pnameit $(info "----------------------------------------------------------------
 # make a staging directory
 pnameit $(code "newstage")
 stagedir=$(newstage 2> "${BENCHDIRPDFS}/newstage.errlog")
-pnameit $(code "setstage" "-b" "${stagedir}" "-p" "PREAMBLE" "-m" "MEDIA" "-t" "TARGET" "ARTICLE")
-setstageresult=$(setstage "-s" "${stagedir}"  "-m" "${BENCHDIRMEDIA}" "-t" "${BENCHDIRPDFS}" 2> "${BENCHDIRPDFS}/setstage.errlog")
+pnameit $(code "setstage" "-l" "en" "-s" "${stagedir}" "-p" "PREAMBLE" "-m" "MEDIA" "-t" "TARGET" "ARTICLE")
+setstageresult=$(setstage "-l" "en" "-s" "${stagedir}" "-p" "${BENCHPREAMBLE}" "-m" "${BENCHDIRMEDIA}" "-t" "${BENCHDIRPDFS}" 2> "${BENCHDIRPDFS}/setstage.errlog")
 # pnameit $(code "rmstage" "${stagedir}")
 # rmresult=$(rmstage "${stagedir}" 2> "${BENCHDIRPDFS}/rmstage.errlog")
 pnameit $(info "---------------------------------------------------------------------")
