@@ -18,5 +18,5 @@ These are problems currently available in our collection.
 .. toctree::
    :hidden:
    :maxdepth: 2
-   :caption: My contents are better than your contents:
+   :caption: contents:
 

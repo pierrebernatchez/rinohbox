@@ -174,14 +174,21 @@ def copy_no_meta(src, dst, pagebreak=None):
  
 def emit_index_and_rstfiles(list_rstfiles, preamble=None, stagingdir=DEFAULT_STAGINGDIR):
     """Emit an index.rst file with an include for each file and emit each file with metatags stripped"""
-    default_preamble="""Default Preamble
-*****************************
+    default_preamble="""
+Learnmath Calculus
+###################
+
+These are problems currently available in our collection.
+
+.. footer:: Copyright © 2026 Pierre Bernatchez—All rights reserved.
+
+.. pagebreak::	    
 
 .. toctree::
    :hidden:
    :maxdepth: 2
    :caption: contents:
-    """
+"""    
     if preamble is None:
         mypreamble = default_preamble
     else:
