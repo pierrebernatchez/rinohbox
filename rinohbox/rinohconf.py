@@ -36,15 +36,25 @@ ArticleBodyPage.get_header_footer_contenttop = _patched_get
 def extract_metadata(app, doctree):
     from docutils import nodes
 
-    title_text = ""
-    for node in doctree.traverse(nodes.title):
-        title_text = node.astext()
-        break
+    docname = app.env.docname
 
+    # Strip .. footer:: nodes from every doctree (index and each included
+    # article) so stray footer text never leaks into the rendered body.
+    # Only the master doc's title/footer should drive rinoh_documents —
+    # doctree-read fires once per document, and without this guard the
+    # last-processed article silently overwrites the title page.
     footer_text = ""
     for node in doctree.traverse(nodes.footer):
         footer_text = node.astext()
         node.parent.remove(node)
+        break
+
+    if docname != app.config.master_doc:
+        return
+
+    title_text = ""
+    for node in doctree.traverse(nodes.title):
+        title_text = node.astext()
         break
 
     app.config.rinoh_documents = [
