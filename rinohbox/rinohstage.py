@@ -174,16 +174,9 @@ def copy_no_meta(src, dst, pagebreak=None):
  
 def emit_index_and_rstfiles(list_rstfiles, preamble=None, stagingdir=DEFAULT_STAGINGDIR):
     """Emit an index.rst file with an include for each file and emit each file with metatags stripped"""
+    # All our index.rst files are the same.  No need for anything else.
+    # These lines followed by one toc entry for each .rst file.
     default_preamble="""
-Learnmath Calculus
-###################
-
-These are problems currently available in our collection.
-
-.. footer:: Copyright © 2026 Pierre Bernatchez—All rights reserved.
-
-.. pagebreak::	    
-
 .. toctree::
    :hidden:
    :maxdepth: 2
@@ -256,8 +249,8 @@ def setstage():
                         help=f'Where to get media files from (dflt {dflt_media}).')
     parser.add_argument('-t', '--target', default=dflt_target, dest="target",
                         help=f'Where to put the resulting documents (dflt {dflt_target}).')
-    parser.add_argument('-p', '--preamble', dest='preamble',
-                        help=f"File containing preamble text for index.rst file (dflt None)")
+    parser.add_argument('-f', '--frontpage', dest='frontpage',
+                        help=f"Front page article to come out as first page. (dflt None)")
     args = parser.parse_args()
     mystage = args.stagingpath
     # the convention is to print the path name to return it to the invoking shell program
@@ -280,20 +273,24 @@ def setstage():
         valid_args= validated_args(myargs)
     else:
         valid_args= validated_args(args.rstfiles)
-    if args.preamble is None:
-        preamble = None
-        print(f"{PROGNAME}: No Preamble.", file=sys.stderr)
-        valid_args = [ Path(af).resolve() for af in valid_args ] # no preamble.rst file to drop
+    if args.frontpage is None:
+        frontpage = None
+        print(f"{PROGNAME}: No Front Page.", file=sys.stderr)
+        valid_args = [ Path(af).resolve() for af in valid_args ] # no frontpage file to drop
     else:
-        preamblefile = Path(args.preamble).resolve()
-        # if necessary drop the preamble filename from the ones to include in the render
+        frontpagefile = Path(args.frontpage).resolve()
+        # double check the validity of the frontpage file just like the others.
+        validfrontpages = validated_args([frontpagefile])
+        if len(validfrontpages) == 0:
+            print(f'{PROGNAME}: Front page: "{frontpagefile}" is not a valid file.', file=sys.stderr)
+            print(f'Aborting render. Leaving the directory "{mystage}" intact.')
+            exit(1)
+         
+        
+        # if necessary drop the frontpage filename from the ones to include in the render
         valid_args = [Path(af).resolve() for af in valid_args
                       if not os.path.samefile(Path(af).resolve(),  preamblefile)]
-        with open(preamblefile, "r") as pfile:
-            preamble = pfile.read()
-        # Log the preamble we used for debug purposes.
-        print(f"{PROGNAME}: Preamble: BEGIN", file=sys.stderr)
-        print(f"{preamble}{PROGNAME}: Preamble: END", file=sys.stderr)
+        print(f"{PROGNAME}: Front Page: {frontpagefile}", file=sys.stderr)
     print(f"{PROGNAME}: Media from: {args.media}", file=sys.stderr)
     print(f"{PROGNAME}: Results to: {args.target}", file=sys.stderr)
     if len(valid_args) == 0 :
@@ -301,11 +298,13 @@ def setstage():
         print(f'Nothing to render. Leaving the directory "{mystage}" intact.')
         exit(1)
     else:
+        if args.frontpage is not None:
+            valid_args.insert(0, frontpagefile)
         # Log the .rst file names 
         for anrst in valid_args:
             # Log each inpput .rst file name for debug info
             print(f"{PROGNAME}: {anrst}", file=sys.stderr)
-        emit_index_and_rstfiles(valid_args, preamble=preamble, stagingdir=mystage)
+        emit_index_and_rstfiles(valid_args, stagingdir=mystage) # let preamble default to None to trigger default
         # Report success
         print(f"{PROGNAME}: {mystage} is ready to render.", file=sys.stderr)
         print(f'{mystage}')

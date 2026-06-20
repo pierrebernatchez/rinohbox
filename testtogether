@@ -11,7 +11,7 @@ popd >/dev/null
 MYPNAME=$(basename ${0})
 # Configure these
 BENCHDIR="${HOME}/.rinohbox/benchrst"
-REPOPREAMBLE="${HOME}/repos/rinohbox/test/pdfpreamble.rst"
+REPOFRONTPAGE="${HOME}/repos/rinohbox/test/pdffrontpage-en.rst"
 BENCHBASE=$(dirname "${BENCHDIR}")
 BASHDIR="${BENCHBASE}/bashsources"
 BENCHDIRNAME=$(basename ${BENCHDIR})
@@ -19,10 +19,10 @@ BENCHDIRNAME=$(basename ${BENCHDIR})
 # Derive these
 BENCHDIRMEDIA="${BENCHDIR}-media"
 BENCHDIRPDFS="${BENCHDIR}-pdfs"
-REPOARTICLESDIR=$(dirname ${REPOPREAMBLE})
+REPOARTICLESDIR=$(dirname ${REPOFRONTPAGE})
 REPOMEDIADIR="${REPOARTICLESDIR}-media"
-PREAMBLENAME=$(basename "${REPOPREAMBLE}")
-BENCHPREAMBLE="${BENCHDIR}/${PREAMBLENAME}"
+FRONTPAGENAME=$(basename "${REPOFRONTPAGE}")
+BENCHFRONTPAGE="${BENCHDIR}/${FRONTPAGENAME}"
 pushd ${BENCHDIR} >/dev/null
 
 ## the article the bench test will render
@@ -50,7 +50,7 @@ pnameit $(info "Bench Test") $(date "--rfc-3339=seconds")
 pnameit $(info "---------------------------------------------------------------------")
 
 pnameit $(info "using current directory:") $(emph "${BENCHDIR}" )
-pnameit $(info "using preamble:" ) $(code "${BENCHPREAMBLE}")
+pnameit $(info "using frontpage:" ) $(code "${BENCHFRONTPAGE}")
 pnameit $(info "using articles:" ) $(code "${TESTARTICLE}")
 pnameit $(info "using media:" ) $(code "${BENCHDIRMEDIA}")
 pnameit $(info "using target:" ) $(code "${BENCHDIRPDFS}")
@@ -59,8 +59,8 @@ pnameit $(info "----------------------------------------------------------------
 # make a staging directory
 pnameit $(code "newstage")
 stagedir=$(newstage 2> "${BENCHDIRPDFS}/newstage.errlog")
-pnameit $(code "setstage" "-l" "en" "-s" "${stagedir}" "-p" "PREAMBLE" "-m" "MEDIA" "-t" "TARGET" "ARTICLE")
-setstageresult=$(setstage "-l" "en" "-s" "${stagedir}" "-p" "${BENCHPREAMBLE}" "-m" "${BENCHDIRMEDIA}" "-t" "${BENCHDIRPDFS}" 2> "${BENCHDIRPDFS}/setstage.errlog")
+pnameit $(code "setstage" "-l" "en" "-s" "${stagedir}" "-f" "FRONTPAGE" "-m" "MEDIA" "-t" "TARGET" "ARTICLE")
+setstageresult=$(setstage "-l" "en" "-s" "${stagedir}" "-f" "${BENCHFRONTPAGE}" "-m" "${BENCHDIRMEDIA}" "-t" "${BENCHDIRPDFS}" 2> "${BENCHDIRPDFS}/setstage.errlog")
 # pnameit $(code "rmstage" "${stagedir}")
 # rmresult=$(rmstage "${stagedir}" 2> "${BENCHDIRPDFS}/rmstage.errlog")
 pnameit $(info "---------------------------------------------------------------------")
