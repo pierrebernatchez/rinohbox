@@ -27,6 +27,11 @@ A) Express :math:`h` in terms of :math:`r`.
 
 The metal for the base and lid of the box costs 10 cents per :math:`cm^2` and the metal for the curved side costs :math:`8` cents per :math:`cm^2`.
 
+.. pagebreak::
+
+Intentional explict page break for test purposes.
+
+
 The total cost of the metal, in cents, is :math:`C`.
 
 B) Show that :math:`C\,=\,20\pi{}r^2 + \frac{320\pi}{r}`
