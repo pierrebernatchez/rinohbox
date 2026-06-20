@@ -172,7 +172,7 @@ def copy_no_meta(src, dst, pagebreak=None):
             fout.write(pagebreak)
         # add a page break as the last line
  
-def emit_index_and_rstfiles(list_rstfiles, preamble=None, stagingdir=DEFAULT_STAGINGDIR):
+def emit_index_and_rstfiles(list_rstfiles, stagingdir=DEFAULT_STAGINGDIR):
     """Emit an index.rst file with an include for each file and emit each file with metatags stripped"""
     # All our index.rst files are the same.  No need for anything else.
     # These lines followed by one toc entry for each .rst file.
@@ -181,12 +181,8 @@ def emit_index_and_rstfiles(list_rstfiles, preamble=None, stagingdir=DEFAULT_STA
    :hidden:
    :maxdepth: 2
    :caption: contents:
-"""    
-    if preamble is None:
-        mypreamble = default_preamble
-    else:
-        mypreamble = preamble
-    
+"""
+    mypreamble = default_preamble
     stagepath=Path(stagingdir)
     inames= [ Path(ap).stem  for ap in list_rstfiles ] 
     incls = [ f"   {a}" for a in inames ]
@@ -290,7 +286,7 @@ def setstage():
         
         # if necessary drop the frontpage filename from the ones to include in the render
         valid_args = [Path(af).resolve() for af in valid_args
-                      if not os.path.samefile(Path(af).resolve(),  preamblefile)]
+                      if not os.path.samefile(Path(af).resolve(),  frontpagefile)]
         print(f"{PROGNAME}: Front Page: {frontpagefile}", file=sys.stderr)
     print(f"{PROGNAME}: Media from: {args.media}", file=sys.stderr)
     print(f"{PROGNAME}: Results to: {args.target}", file=sys.stderr)
