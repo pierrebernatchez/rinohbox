@@ -191,6 +191,7 @@ def emit_index_and_rstfiles(list_rstfiles, stagingdir=DEFAULT_STAGINGDIR):
     includeblock = "\n".join(preamble_with_incls)
     indexpath = stagepath / "source" /  Path("index.rst")
     indexpath.write_text(includeblock)
+    # At this writing we are no longer appending page breaks.  FIXME if necessary.
     # filter every source file into the sandbox appending pagebreak on all but the last one
     mypairs = [ (afile, "\n\n.. pagebreak::\n") for afile in list_rstfiles ]
     mypairs[-1] = (mypairs[-1][0], None) # dont want a pagebreak on last one
@@ -201,7 +202,7 @@ def emit_index_and_rstfiles(list_rstfiles, stagingdir=DEFAULT_STAGINGDIR):
         afulldest.resolve()
         afullsource.resolve()
         print(f"{__file__}: {afullsource} -> {afulldest}",file=sys.stderr)
-        copy_no_meta(afullsource, afulldest, pagebreak=abreak)        
+        copy_no_meta(afullsource, afulldest) # no more: ", pagebreak=abreak"  FIXME         
     return
                 
 def validated_args(myargs):
