@@ -280,8 +280,9 @@ def setstage():
     else:
         frontpagefile = Path(args.frontpage).resolve()
         # double check the validity of the frontpage file just like the others.
-        validfrontpages = validated_args([frontpagefile])
-        if len(validfrontpages) == 0:
+        listofone = [ f"{frontpagefile}" ]
+        validfrontpages = validated_args(listofone)
+        if len(validfrontpages) 1= 1:
             print(f'{PROGNAME}: Front page: "{frontpagefile}" is not a valid file.', file=sys.stderr)
             print(f'Aborting render. Leaving the directory "{mystage}" intact.')
             exit(1)
