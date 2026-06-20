@@ -202,7 +202,7 @@ def emit_index_and_rstfiles(list_rstfiles, stagingdir=DEFAULT_STAGINGDIR):
         afulldest.resolve()
         afullsource.resolve()
         print(f"{__file__}: {afullsource} -> {afulldest}",file=sys.stderr)
-        copy_no_meta(afullsource, afulldest) # no more: ", pagebreak=abreak"  FIXME         
+        copy_no_meta(afullsource, afulldest, pagebreak=abreak)
     return
                 
 def validated_args(myargs):
