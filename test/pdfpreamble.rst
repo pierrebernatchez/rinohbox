@@ -1,15 +1,11 @@
 Learnmath Calculus
 ###################
 
-
-
-.. image:: ../images/testlogo.jpg
+.. image:: ../images/testlogo.png
    :width: 12cm
    :align: center
 
-
-
-These are problems currently available in our collection.
+**Problems in our collection.**
 
 .. footer:: Copyright © 2026 Pierre Bernatchez—All rights reserved.
 
