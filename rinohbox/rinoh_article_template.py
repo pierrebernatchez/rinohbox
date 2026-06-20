@@ -1,13 +1,16 @@
 # rst_editor_template.py
 # Rinohtype document template for RST Editor PDF output.
 # Subclasses rinohtype's built-in Article template, suppressing the TOC
-# and configuring margins and footer. The title renders natively on page 1.
+# and configuring margins and footer. The title renders natively on page 1
+# (page 1's front-matter special case is bypassed — see rinohconf.py) and
+# the footer is resolved per-section, per-page, rather than baked in once
+# for the whole document — see SECTION_FOOTER below.
 
 from rinoh.attribute import OverrideDefault, Var
 from rinoh.dimension import CM, PT
 from rinoh.templates.article import Article, ArticleBodyPageTemplate
 from rinoh.template import ContentsPartTemplate
-from rinoh.text import SingleStyledText
+from rinoh.reference import Field, SectionFieldType
 
 
 class NoTOCContentsPartTemplate(ContentsPartTemplate):
@@ -18,10 +21,25 @@ class NoTOCContentsPartTemplate(ContentsPartTemplate):
         yield from super()._flowables(document)
 
 
-def make_article(footer_text=""):
+class SECTION_FOOTER(SectionFieldType):
+    """Field type resolving to the current section's footer text.
+
+    Mirrors rinoh's built-in SECTION_TITLE/SECTION_NUMBER: at layout time,
+    container.page.get_current_section(level) hands back whichever section
+    the current physical page falls inside, and this field looks up that
+    section's 'footer' reference (registered via document.set_reference —
+    see the Heading.prepare patch in rinohconf.py). Each page's footer is
+    therefore resolved live, per page, the same way running headers already
+    are — no single footer_text baked into the page template per build.
+    """
+    name = 'section footer'
+    reference_type = 'footer'
+
+
+def make_article():
 
     class BareArticle(Article):
-        """Article template with no TOC and configurable footer."""
+        """Article template with no TOC; footer resolved per-section."""
 
         contents = NoTOCContentsPartTemplate(page_number_format='number')
 
@@ -32,7 +50,7 @@ def make_article(footer_text=""):
             top_margin=2.0*CM,
             bottom_margin=2.0*CM,
             header_footer_distance=2*PT,
-            footer_text=SingleStyledText(footer_text) if footer_text else None,
+            footer_text=Field(SECTION_FOOTER(1)),
         )
         contents_page = ArticleBodyPageTemplate(base='page')
 
