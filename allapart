@@ -11,7 +11,7 @@ popd >/dev/null
 MYPNAME=$(basename ${0})
 # Configure these
 BENCHDIR="${HOME}/.rinohbox/benchrst"
-REPOPREAMBLE="${HOME}/repos/rinohbox/test/pdfpreamble.rst"
+REPOFRONTPAGE="${HOME}/repos/rinohbox/test/pdffrontpage-en.rst"
 BENCHBASE=$(dirname "${BENCHDIR}")
 BASHDIR="${BENCHBASE}/bashsources"
 BENCHDIRNAME=$(basename ${BENCHDIR})
@@ -19,15 +19,16 @@ BENCHDIRNAME=$(basename ${BENCHDIR})
 # Derive these
 BENCHDIRMEDIA="${BENCHDIR}-media"
 BENCHDIRPDFS="${BENCHDIR}-pdfs"
-REPOARTICLESDIR=$(dirname ${REPOPREAMBLE})
+REPOARTICLESDIR=$(dirname ${REPOFRONTPAGE})
 REPOMEDIADIR="${REPOARTICLESDIR}-media"
-PREAMBLENAME=$(basename "${REPOPREAMBLE}")
-BENCHPREAMBLE="${BENCHDIR}/${PREAMBLENAME}"
+FRONTPAGENAME=$(basename "${REPOFRONTPAGE}")
+BENCHFRONTPAGE="${BENCHDIR}/${FRONTPAGENAME}"
 pushd ${BENCHDIR} >/dev/null
 
 ## the article the bench test will render
 
-TESTARTICLE="${BENCHDIR}/sampl-calp003-en.rst"
+TESTARTICLE="${BENCHDIR}/sampl-calp001-en.rst"
+TESTARTICLENAME="sampl-calp001-en"
 
 ERRLOGS=("${BENCHDIRPDFS}/newstage.errlog" "${BENCHDIRPDFS}/setstage.errlog" "${BENCHDIRPDFS}/rmstage.errlog"  )
 
@@ -50,19 +51,18 @@ pnameit $(info "Bench Test") $(date "--rfc-3339=seconds")
 pnameit $(info "---------------------------------------------------------------------")
 
 pnameit $(info "using current directory:") $(emph "${BENCHDIR}" )
-pnameit $(info "using preamble:" ) $(code "${BENCHPREAMBLE}")
+pnameit $(info "using frontpage:" ) $(code "${BENCHFRONTPAGE}")
 pnameit $(info "using articles:" ) $(code "${TESTARTICLE}")
 pnameit $(info "using media:" ) $(code "${BENCHDIRMEDIA}")
 pnameit $(info "using target:" ) $(code "${BENCHDIRPDFS}")
 pnameit $(info "---------------------------------------------------------------------")
 #
 # make a staging directory
+# No front page on these
 pnameit $(code "newstage")
 stagedir=$(newstage 2> "${BENCHDIRPDFS}/newstage.errlog")
-pnameit $(code "setstage" "-l" "en" "-s" "${stagedir}" "-p" "PREAMBLE" "-m" "MEDIA" "-t" "TARGET" "ARTICLE")
-setstageresult=$(setstage "-l" "en" "-s" "${stagedir}" "-p" "${BENCHPREAMBLE}" "-m" "${BENCHDIRMEDIA}" "-t" "${BENCHDIRPDFS}" 2> "${BENCHDIRPDFS}/setstage.errlog")
-# pnameit $(code "rmstage" "${stagedir}")
-# rmresult=$(rmstage "${stagedir}" 2> "${BENCHDIRPDFS}/rmstage.errlog")
+pnameit $(code "setstage" "-l" "en" "-s" "${stagedir}" "-m" "MEDIA" "-t" "TARGET" "ARTICLE" "${TESTARTICLE}")
+setstageresult=$(setstage "-l" "en" "-s" "${stagedir}" "-m" "${BENCHDIRMEDIA}" "-t" "${BENCHDIRPDFS}" "${TESTARTICLE}" 2> "${BENCHDIRPDFS}/setstage.errlog")
 pnameit $(info "---------------------------------------------------------------------")
 if [[ "${setstageresult}" == "${stagedir}" ]] ; then
     pnameit $(info "setstage: confirm result matches  --stagingpath argument")
@@ -72,16 +72,21 @@ fi
 # do the render
 sphinx-build -b rinoh "${stagedir}"/source  "${stagedir}"/output
 # grab result 
-/usr/bin/ln --force "${stagedir}/output/output.pdf" "${BENCHDIRPDFS}/${BENCHDIRNAME}.pdf"
-pnameit $(info "Result: ${BENCHDIRPDFS}/${BENCHDIRNAME}.pdf")
+/usr/bin/ln --force "${stagedir}/output/output.pdf" "${BENCHDIRPDFS}/${TESTARTICLENAME}.pdf"
+pnameit $(info "Result: ${BENCHDIRPDFS}/${TESTARTICLENAME}.pdf")
 
+
+#pnameit $(warn "sphinx-build -b rinoh" "${stagedir}"/source  "${stagedir}"/output)
+#pnameit $(warn "/usr/bin/ln --force" "${stagedir}/output/output.pdf" "${BENCHDIRPDFS}/${BENCHDIRNAME}.pdf")
+
+#pnameit $(code "rmstage" "${stagedir}")
 #rmresult=$(rmstage "${stagedir}" 2> "${BENCHDIRPDFS}/rmstage.errlog")
 #if [[ "${rmresult}" == "${stagedir}" ]] ; then
 #    pnameit $(info "rmstage: confirm result matches  argument")
 #else
 #    pnameit $(fatal "rmstage: FAIL to confirm result matches argument")
 #fi
-pnameit $(info "${stagedir} has been successfully removed")
+#pnameit $(info "${stagedir} has been successfully removed")
 pnameit $(info "stderr logs:")
 setpindent "    "
 for alog in ${ERRLOGS[@]}; do

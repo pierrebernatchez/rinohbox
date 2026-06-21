@@ -61,24 +61,23 @@ pnameit $(code "newstage")
 stagedir=$(newstage 2> "${BENCHDIRPDFS}/newstage.errlog")
 pnameit $(code "setstage" "-l" "en" "-s" "${stagedir}" "-f" "FRONTPAGE" "-m" "MEDIA" "-t" "TARGET" "ARTICLE")
 setstageresult=$(setstage "-l" "en" "-s" "${stagedir}" "-f" "${BENCHFRONTPAGE}" "-m" "${BENCHDIRMEDIA}" "-t" "${BENCHDIRPDFS}" 2> "${BENCHDIRPDFS}/setstage.errlog")
-# pnameit $(code "rmstage" "${stagedir}")
-# rmresult=$(rmstage "${stagedir}" 2> "${BENCHDIRPDFS}/rmstage.errlog")
 pnameit $(info "---------------------------------------------------------------------")
 if [[ "${setstageresult}" == "${stagedir}" ]] ; then
     pnameit $(info "setstage: confirm result matches  --stagingpath argument")
 else
     pnameit $(fatal "setstage: FAILED to confirm result matches  --stagingpath argument")
 fi
-##---# do the render
-##---sphinx-build -b rinoh "${stagedir}"/source  "${stagedir}"/output
-##---# grab result 
-##---/usr/bin/ln --force "${stagedir}/output/output.pdf" "${BENCHDIRPDFS}/${BENCHDIRNAME}.pdf"
-##---pnameit $(info "Result: ${BENCHDIRPDFS}/${BENCHDIRNAME}.pdf")
-##---
+# do the render
+sphinx-build -b rinoh "${stagedir}"/source  "${stagedir}"/output
+# grab result 
+/usr/bin/ln --force "${stagedir}/output/output.pdf" "${BENCHDIRPDFS}/${BENCHDIRNAME}.pdf"
+pnameit $(info "Result: ${BENCHDIRPDFS}/${BENCHDIRNAME}.pdf")
 
-pnameit $(warn "sphinx-build -b rinoh" "${stagedir}"/source  "${stagedir}"/output)
-pnameit $(warn "/usr/bin/ln --force" "${stagedir}/output/output.pdf" "${BENCHDIRPDFS}/${BENCHDIRNAME}.pdf")
 
+#pnameit $(warn "sphinx-build -b rinoh" "${stagedir}"/source  "${stagedir}"/output)
+#pnameit $(warn "/usr/bin/ln --force" "${stagedir}/output/output.pdf" "${BENCHDIRPDFS}/${BENCHDIRNAME}.pdf")
+
+#pnameit $(code "rmstage" "${stagedir}")
 #rmresult=$(rmstage "${stagedir}" 2> "${BENCHDIRPDFS}/rmstage.errlog")
 #if [[ "${rmresult}" == "${stagedir}" ]] ; then
 #    pnameit $(info "rmstage: confirm result matches  argument")

@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+#
+set -euo pipefail
+#
+# bash trick to obtain a clean absolute path to this script.
+#
+pushd `dirname $0` >/dev/null
+SCRIPTPATH=`pwd -P`
+popd >/dev/null
+MYPNAME=`basename ${0}`
+
+# 
+##
+## This script Sets up a rendering stage for a single article (no title page).
+## Then it renders it.
+## Finally it saves the output file in ../<directory-pdfs>
+##
+#
+BASHDIR="${HOME}/.rinohbox/bashsources"
+
+source  ${BASHDIR}/colorsource
+
+
+# Configure these
+TESTARTICLE=${1:-/home/ubuntu/repos/rinohbox/test/sampl-calp001-en.rst}
+TESTARTICLENAME=$(basename ${TESTARTICLE})
+TESTARTICLENAMENOEXT=${TESTARTICLENAME%.*}
+
+# Need to make test article into a full path name
+# derive everything else form that full path name
+# all our directories are dricven by where testarticle is
+SOURCEDIR=$(dirname ${TESTARTICLE})
+# Normalize it to full path
+pushd ${SOURCEDIR} >/dev/null
+SOURCEDIR=`pwd -P`
+popd >/dev/null
+
+SOURCEDIRNAME=$(basename ${SOURCEDIR}) 
+SOURCEBASE=$(dirname ${SOURCEDIR})
+SOURCEMEDIA="${SOURCEBASE}/${SOURCEDIRNAME}-media"
+SOURCEPDFS="${SOURCEBASE}/${SOURCEDIRNAME}-pdfs"
+SOURCEFRONTPAGE="${SOURCEDIR}/pdffrontpage-en.rst"
+# pushd ${BENCHDIR} >/dev/null
+pnameit $(info "#####################################################################")
+pnameit $(info "${MYPNAME}") ----  $(date "--rfc-3339=seconds")
+pnameit $(info "---------------------------------------------------------------------")
+pnameit $(info "This script Sets up a rendering stage for one single article file.")
+pnameit $(info "Then renders it.")
+pnameit $(info "Then saves the pdf file in")  $(emph "${SOURCEPDFS}")
+pnameit $(info "---------------------------------------------------------------------")
+pnameit $(info "TESTARTICLE=${TESTARTICLE}")
+pnameit $(info "TESTARTICLANAMENOEXT=${TESTARTICLENAMENOEXT}")
+pnameit $(info "SOURCEDIR=${SOURCEDIR}")
+pnameit $(info "SOURCEMEDIA=${SOURCEMEDIA}")
+pnameit $(info "SOURCEPDFS=${SOURCEPDFS}")
+pnameit $(info "SOURCEFRONTPAGE=${SOURCEFRONTPAGE}")
+pnameit $(info "SOURCEDIR=${SOURCEDIR}")
+pnameit $(info "---------------------------------------------------------------------")
+pnameit $(info "1- Create and initialize a staging directory")
+pnameit $(code "newstage" )
+stagingdir=$(newstage)
+pnameit $(info "Result:") $(emph "${stagingdir}" )
+pnameit $(info "---------------------------------------------------------------------")
+pnameit $(info "2- Set the article into the stage")
+pnameit $(code setstage -s "${stagingdir}" "-l" "en" "-m" "${SOURCEMEDIA}" -t "${SOURCEPDFS}" "${TESTARTICLE}")
+setresult=$(setstage -s "${stagingdir}" -l en -m "${SOURCEMEDIA}" -t "${SOURCEPDFS}" "${TESTARTICLE}")
+pnameit $(info "---------------------------------------------------------------------")
+pnameit $(info "3- Render")
+pnameit $(info "---------------------------------------------------------------------")
+pnameit $(code "sphinx-build" "-b" "rinoh" "${stagingdir}/source" "${stagingdir}/output")
+renderresult=$(sphinx-build -b rinoh "${stagingdir}/source" "${stagingdir}/output")
+pnameit $(info "4- Preserve the result")
+pnameit $(code ln -f -t "${SOURCEPDFS}" "${stagingdir}"'/output/*' )
+ingorethis=$(ln -f -t "${SOURCEPDFS}" ${stagingdir}/output/*)
+pnameit $(code ln -f "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf" )
+pnameit $(code  "/usr/bin/mv" "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf")
+/usr/bin/mv "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf"	  
+pnameit $(info "---------------------------------------------------------------------")
+pnameit $(info "5- Discard the staging area")
+pnameit $(code "rmtage \"${stagingdir}\"")
+rmresult=$(rmstage "${stagingdir}")
+pnameit $(info "---------------------------------------------------------------------")
+pnameit $(info "To view use this:") $(emph xdg-open "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf")
+pnameit 
