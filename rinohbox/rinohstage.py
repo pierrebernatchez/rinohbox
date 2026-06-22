@@ -257,19 +257,23 @@ def setstage():
         print(f"{PROGNAME}: Invalid rinoh staging directory: {mystage}", file=sys.stderr)
         print(f"Invalid rinoh staging directory: {mystage}")
         exit(1)
+    argslen = len(args.rstfiles)
+    print(f"{PROGNAME}: {argslen} article arguments. ",file=sys.stderr)
     imagesdir = Path(mystage) / "images"
     images = [img for img in Path(args.media).glob('*')]
     for imgfile in images:
         dst = imagesdir / imgfile.name
         src = imgfile
         dst.unlink(missing_ok=True)
-        dst.hardlink_to(src)\
+        dst.hardlink_to(src)
 
-    if len(args.rstfiles) == 0:
+    if argslen == 0:
         myargs = sorted([str(p) for p in Path('.').glob(f'*-{args.lang}.rst')])
         valid_args= validated_args(myargs)
     else:
         valid_args= validated_args(args.rstfiles)
+    lenvalid = len(valid_args)
+    print(f"{PROGNAME}: {lenvalid} validated arguments.", file=sys.stderr)
     if args.frontpage is None:
         frontpage = None
         print(f"{PROGNAME}: No Front Page.", file=sys.stderr)
@@ -283,12 +287,12 @@ def setstage():
             print(f'{PROGNAME}: Front page: "{frontpagefile}" is not a valid file.', file=sys.stderr)
             print(f'Aborting render. Leaving the directory "{mystage}" intact.')
             exit(1)
-         
-        
         # if necessary drop the frontpage filename from the ones to include in the render
         valid_args = [Path(af).resolve() for af in valid_args
                       if not os.path.samefile(Path(af).resolve(),  frontpagefile)]
+        lenvalid = len(valid_args)
         print(f"{PROGNAME}: Front Page: {frontpagefile}", file=sys.stderr)
+        print(f"{PROGNAME}: {lenvalid} validated arguments - front page excluded.", file=sys.stderr)
     print(f"{PROGNAME}: Media from: {args.media}", file=sys.stderr)
     print(f"{PROGNAME}: Results to: {args.target}", file=sys.stderr)
     if len(valid_args) == 0 :
