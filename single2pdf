@@ -20,10 +20,26 @@ BASHDIR="${HOME}/.rinohbox/bashsources"
 
 source  ${BASHDIR}/colorsource
 
-# Configure these
-TESTARTICLE=${1:-/home/ubuntu/.rinohbox/benchrst/sampl-calp001-en.rst}
+#
+# give arg1 a default valud: sampl-calp001-en.rst
+#
+TESTARTICLE=${1:-/home/ubuntu/.rinohbox/benchrst/default-that-wont-work-xx.rst}
 TESTARTICLENAME=$(basename ${TESTARTICLE})
-TESTARTICLENAMENOEXT=${TESTARTICLENAME%.*}
+TESTARTICLENAMENOEXT=${TESTARTICLENAME%.rst}
+if [[ "${TESTARTICLENAME}" == "${TESTARTICLENAMENOEXT}" ]] ; then
+    pnameit $(fatal "Abort : no trailing '-en.rst', '-fr.rst', or '-es.rst': ${TESTARTICLENAME}")
+    exit 1
+fi
+# Extract the language code from the name
+TESTLANG="${TESTARTICLENAMENOEXT##*-}"  # en,fr or es
+if contains ${TESTLANG} "en" "fr" "es" ; then
+    true # equivalent to pass
+else
+    pnameit $(fatal "Abort : no trailing '-en.rst', '-fr.rst', or '-es.rst': ${TESTARTICLENAME}")
+    exit 1
+fi    
+    
+
 
 # Need to make test article into a full path name
 # derive everything else form that full path name
@@ -61,13 +77,16 @@ stagingdir=$(newstage)
 pnameit $(info "Result:") $(emph "${stagingdir}" )
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "2- Set the article into the stage")
-pnameit $(code setstage -s "${stagingdir}" "-l" "en" "-m" "${SOURCEMEDIA}" -t "${SOURCEPDFS}" "${TESTARTICLE}")
-setresult=$(setstage -s "${stagingdir}" -l en -m "${SOURCEMEDIA}" -t "${SOURCEPDFS}" "${TESTARTICLE}")
+pnameit $(code setstage -s "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}" -t "${SOURCEPDFS}" "${TESTARTICLE}")
+
+setresult=$(setstage "-l" "${TESTLANG}" "-s" "${stagingdir}" "-m" "${SOURCEMEDIA}" "-t" "${SOURCEPDFS}" 2> "${SOURCEPDFS}/setstage.errlog")
+
+setresult=$(setstage -s "${stagingdir}" -l "${TESTLANG}" -m "${SOURCEMEDIA}" -t "${SOURCEPDFS}" "${TESTARTICLE}")
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "3- Render")
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(code "sphinx-build" "-b" "rinoh" "${stagingdir}/source" "${stagingdir}/output")
-renderresult=$(sphinx-build -b rinoh "${stagingdir}/source" "${stagingdir}/output")
+renderresult=$(sphinx-build -b rinoh "${stagingdir}/source" "${stagingdir}/output"  2> "${SOURCEPDFS}/sphinx-build.errlog")
 pnameit $(info "4- Preserve the result")
 pnameit $(code ln -f -t "${SOURCEPDFS}" "${stagingdir}"'/output/*' )
 ingorethis=$(ln -f -t "${SOURCEPDFS}" ${stagingdir}/output/*)

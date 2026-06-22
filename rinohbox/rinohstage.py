@@ -292,7 +292,7 @@ def setstage():
     print(f"{PROGNAME}: Media from: {args.media}", file=sys.stderr)
     print(f"{PROGNAME}: Results to: {args.target}", file=sys.stderr)
     if len(valid_args) == 0 :
-        print(f'{PROGNAME}Nothing to render. Leaving the directory "{mystage}" intact.', file=sys.stderr)
+        print(f'{PROGNAME}: Nothing to render. Leaving the directory "{mystage}" intact.', file=sys.stderr)
         print(f'Nothing to render. Leaving the directory "{mystage}" intact.')
         exit(1)
     else:

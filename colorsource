@@ -20,6 +20,32 @@
 
 #_X_INDENT
 
+#
+# Other handy functions
+#    Returns 0 if the first argument is within the others
+# Use like this:
+#
+##--list=("apple" "banana" "cherry")
+##--
+##--if contains "banana" "${list[@]}"; string then
+##--    echo "match found"
+##--else
+##--    echo "no match"
+##--fi
+##--
+contains() {
+    local target="$1"
+    shift
+    local item
+    for item in "$@"; do
+        [[ "$item" == "$target" ]] && return 0
+    done
+    return 1
+}
+
+# color stuff
+#
+
 strdecor () {
     
     case ${1} in
