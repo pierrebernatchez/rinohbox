@@ -36,9 +36,13 @@ bashscripts () {
     [[ -r "${SCRIPPATH}/colorsource" ]] && echo -e "${SCRIPPATH}/colorsource"
     [[ -r "${SCRIPPATH}/colorit" ]] && echo -e "${SCRIPPATH}/colorit"
     [[ -r "${SCRIPPATH}/colortest" ]] && echo -e "${SCRIPPATH}/colortest"
-    [[ -r "${SCRIPPATH}/testtogether" ]] && echo -e "${SCRIPPATH}/testtogether"
-    [[ -r "${SCRIPPATH}/testapart" ]] && echo -e "${SCRIPPATH}/testapart"
+    [[ -r "${SCRIPPATH}/single2pdf" ]] && echo -e "${SCRIPPATH}/single2pdf"
+    [[ -r "${SCRIPPATH}/allapart2pdf" ]] && echo -e "${SCRIPPATH}/allapart2pdf"
+    [[ -r "${SCRIPPATH}/alltogether2pdf" ]] && echo -e "${SCRIPPATH}/alltogether2pdf"
 }
+
+ 
+
 
 mapfile -t bashinstalls < <(bashscripts)
 

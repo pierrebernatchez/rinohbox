@@ -20,9 +20,8 @@ BASHDIR="${HOME}/.rinohbox/bashsources"
 
 source  ${BASHDIR}/colorsource
 
-
 # Configure these
-TESTARTICLE=${1:-/home/ubuntu/repos/rinohbox/test/sampl-calp001-en.rst}
+TESTARTICLE=${1:-/home/ubuntu/.rinohbox/benchrst/sampl-calp001-en.rst}
 TESTARTICLENAME=$(basename ${TESTARTICLE})
 TESTARTICLENAMENOEXT=${TESTARTICLENAME%.*}
 
