@@ -11,17 +11,18 @@ MYPNAME=`basename ${0}`
 
 # 
 ##
-## This script Sets up a rendering stage for a single article (no title page).
-## Then it renders it.
-## Finally it saves the output file in ../<directory-pdfs>
+## This script Sets up a rendering stage for all the articles
+## in the same directory as the given article.
+## It does this by changing to the correct directory and letting
+## the setstage figure out the articles to use.
 ##
 #
 BASHDIR="${HOME}/.rinohbox/bashsources"
 
 source  ${BASHDIR}/colorsource
-
 #
-# give arg1 a default valud: sampl-calp001-en.rst
+# Deliberately give arg1 a default value that will fail
+# To force the user to offer the correct one.
 #
 TESTARTICLE=${1:-/home/ubuntu/.rinohbox/benchrst/default-that-wont-work-xx.rst}
 TESTARTICLENAME=$(basename ${TESTARTICLE})
@@ -37,13 +38,14 @@ if contains ${TESTLANG} "en" "fr" "es" ; then
 else
     pnameit $(fatal "Abort : no trailing '-en.rst', '-fr.rst', or '-es.rst': ${TESTARTICLENAME}")
     exit 1
-fi    
-    
+fi
 
-
+#
 # Need to make test article into a full path name
 # derive everything else form that full path name
 # all our directories are dricven by where testarticle is
+#
+
 SOURCEDIR=$(dirname ${TESTARTICLE})
 # Normalize it to full path
 pushd ${SOURCEDIR} >/dev/null
@@ -55,12 +57,11 @@ SOURCEBASE=$(dirname ${SOURCEDIR})
 SOURCEMEDIA="${SOURCEBASE}/${SOURCEDIRNAME}-media"
 SOURCEPDFS="${SOURCEBASE}/${SOURCEDIRNAME}-pdfs"
 SOURCEFRONTPAGE="${SOURCEDIR}/pdffrontpage-en.rst"
-# pushd ${BENCHDIR} >/dev/null
 pnameit $(info "#####################################################################")
 pnameit $(info "${MYPNAME}") ----  $(date "--rfc-3339=seconds")
 pnameit $(info "---------------------------------------------------------------------")
-pnameit $(info "This script Sets up a rendering stage for one single article file.")
-pnameit $(info "Then renders it.")
+pnameit $(info "This script Sets up a rendering stage for all articles in a directory.")
+pnameit $(info "Then renders a single .pdf file containing them all.")
 pnameit $(info "Then saves the pdf file in")  $(emph "${SOURCEPDFS}")
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "TESTARTICLE=${TESTARTICLE}")
@@ -77,22 +78,27 @@ stagingdir=$(newstage)
 pnameit $(info "Result:") $(emph "${stagingdir}" )
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "2- Set the article into the stage")
-pnameit $(code setstage -s "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}" -t "${SOURCEPDFS}")
+pnameit $(code setstage -s "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}" -t "${SOURCEPDFS}" "${TESTARTICLE}")
+
+# setresult=$(setstage "-l" "${TESTLANG}" "-s" "${stagingdir}" "-m" "${SOURCEMEDIA}" "-t" "${SOURCEPDFS}" 2> "${SOURCEPDFS}/setstage.errlog")
+pushd ${SOURCEDIR} >/dev/null
 setresult=$(setstage -s "${stagingdir}" -l "${TESTLANG}" -m "${SOURCEMEDIA}" -t "${SOURCEPDFS}")
+popd >/dev/null
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "3- Render")
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(code "sphinx-build" "-b" "rinoh" "${stagingdir}/source" "${stagingdir}/output")
-renderresult=$(sphinx-build -b rinoh "${stagingdir}/source" "${stagingdir}/output")
+renderresult=$(sphinx-build -b rinoh "${stagingdir}/source" "${stagingdir}/output"  2> "${SOURCEPDFS}/sphinx-build.errlog")
 pnameit $(info "4- Preserve the result")
 pnameit $(code ln -f -t "${SOURCEPDFS}" "${stagingdir}"'/output/*' )
 ingorethis=$(ln -f -t "${SOURCEPDFS}" ${stagingdir}/output/*)
-pnameit $(code  "/usr/bin/mv" "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf")
+pnameit $(code ln -f "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf" )
+pnameit $(code  "/usr/bin/mv" "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${SOURCEDIRNAME}.pdf")
 /usr/bin/mv "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${SOURCEDIRNAME}.pdf"	  
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "5- Discard the staging area")
 pnameit $(code "rmtage \"${stagingdir}\"")
 rmresult=$(rmstage "${stagingdir}")
 pnameit $(info "---------------------------------------------------------------------")
-pnameit $(info "To view use this:") $(emph xdg-open "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf")
+pnameit $(info "To view use this:") $(emph xdg-open "${SOURCEPDFS}/${SOURCEDIRNAME}.pdf")
 pnameit 
