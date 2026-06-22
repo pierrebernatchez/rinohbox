@@ -215,11 +215,11 @@ def validated_args(myargs):
 
         
         return list(dict.fromkeys(valids)) # drops duplicates, leaving order intact
-    valids = rst_and_readable_but_not_index_files()
+    xvalids = rst_and_readable_but_not_index_files()
     for afile in myargs:
-        if afile not in valids:
+        if afile not in xvalids:
             print(f"{__file__}: Ignored: {afile}", file=sys.stderr)
-    return valids
+    return xvalids
 
 def setstage():
     """ENTRYPOINT
@@ -233,9 +233,6 @@ def setstage():
     """
     curdir = Path('.').resolve()
     curbase = os.path.basename(curdir)
-    dirname = curdir.parent
-    dflt_media = dirname / Path( f"{curbase}-media")
-    dflt_target= dirname / Path( f"{curbase}-pdfs")
     parser = argparse.ArgumentParser()
     parser.add_argument('rstfiles', nargs='*', help='RST files to process.')
     parser.add_argument('-s', '--stagingpath', dest="stagingpath", required=True,
@@ -244,8 +241,6 @@ def setstage():
                         help=f'language specific .rst files to glob for  (default en).')
     parser.add_argument('-m', '--media', default=dflt_media, dest="media",
                         help=f'Where to get media files from (dflt {dflt_media}).')
-    parser.add_argument('-t', '--target', default=dflt_target, dest="target",
-                        help=f'Where to put the resulting documents (dflt {dflt_target}).')
     parser.add_argument('-f', '--frontpage', dest='frontpage',
                         help=f"Front page article to come out as first page. (dflt None)")
     args = parser.parse_args()
@@ -268,8 +263,8 @@ def setstage():
         dst.hardlink_to(src)
 
     if argslen == 0:
-        myargs = sorted([str(p) for p in Path('.').glob(f'*-{args.lang}.rst')])
-        valid_args= validated_args(myargs)
+        myargs=sorted([str(p) for p in Path('.').glob(f'*-{args.lang}.rst')])
+        valid_args=validated_args(myargs)
     else:
         valid_args= validated_args(args.rstfiles)
     lenvalid = len(valid_args)
@@ -294,7 +289,6 @@ def setstage():
         print(f"{PROGNAME}: Front Page: {frontpagefile}", file=sys.stderr)
         print(f"{PROGNAME}: {lenvalid} validated arguments - front page excluded.", file=sys.stderr)
     print(f"{PROGNAME}: Media from: {args.media}", file=sys.stderr)
-    print(f"{PROGNAME}: Results to: {args.target}", file=sys.stderr)
     if len(valid_args) == 0 :
         print(f'{PROGNAME}: Nothing to render. Leaving the directory "{mystage}" intact.', file=sys.stderr)
         print(f'Nothing to render. Leaving the directory "{mystage}" intact.')
