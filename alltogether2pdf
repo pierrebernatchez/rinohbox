@@ -9,7 +9,6 @@ SCRIPTPATH=`pwd -P`
 popd >/dev/null
 MYPNAME=`basename ${0}`
 
-
 ## This script Sets up a rendering stage for all articles in a
 ## directory as a single pdf.  It can be done with or without a
 ## frontpage.
@@ -30,11 +29,18 @@ source  ${BASHDIR}/colorsource
 #
 # give arg1 a default valud: sampl-calp001-en.rst
 #
-TESTARTICLE=${1:-/home/ubuntu/.rinohbox/benchrst/default-that-wont-work-xx.rst}
+# Make sure we get the argument we derive it all from
+TESTARTICLE=${1:-}
+if [[ -z "${TESTARTICLE}" ]]; then
+    pnameit $(warn "Usage: ${MYPNAME} <pathto-article-??.rst>  [<pathto-frontpage-??.rst>]") 
+    exit 1
+fi
+#
+#
 TESTARTICLENAME=$(basename ${TESTARTICLE})
 TESTARTICLENAMENOEXT=${TESTARTICLENAME%.rst}
 if [[ "${TESTARTICLENAME}" == "${TESTARTICLENAMENOEXT}" ]] ; then
-    pnameit $(fatal "Abort : no trailing '-en.rst', '-fr.rst', or '-es.rst': ${TESTARTICLENAME}")
+    pnameit $(warn "Abort : no trailing '-en.rst', '-fr.rst', or '-es.rst': ${TESTARTICLENAME}")
     exit 1
 fi
 # Extract the language code from the name
@@ -42,12 +48,22 @@ TESTLANG="${TESTARTICLENAMENOEXT##*-}"  # en,fr or es
 if contains ${TESTLANG} "en" "fr" "es" ; then
     true # equivalent to pass
 else
-    pnameit $(fatal "Abort : no trailing '-en.rst', '-fr.rst', or '-es.rst': ${TESTARTICLENAME}")
+    pnameit $(warn "Abort : no trailing '-en.rst', '-fr.rst', or '-es.rst': ${TESTARTICLENAME}")
     exit 1
 fi    
-    
-
-
+FRONTPAGE=${2:-}   # empty if not provided
+ARTICLESUFFIX="${TESTARTICLE: -7}"
+FRONTPAGESUFFIX="${FRONTPAGE: -7}"
+if [[ -n "${FRONTPAGE}" ]]; then
+    if [[ "${ARTICLESUFFIX}" != "${FRONTPAGESUFFIX}" ]]; then
+	pnameit $(warn "front page suffix does not match article suffix: ${ARTICLESUFFIX}")
+	exit 1
+    else
+	pnameit $(info "Rendering with front page: ${FRONTPAGE}")
+    fi
+else
+    pnameit $(info "Rendering with no front page.")
+fi
 # Need to make test article into a full path name
 # derive everything else form that full path name
 # all our directories are dricven by where testarticle is
@@ -80,14 +96,18 @@ pnameit $(info "SOURCEDIR=${SOURCEDIR}")
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "1- Create and initialize a staging directory")
 pnameit $(code "newstage" )
-stagingdir=$(newstage)
+stagingdir=$(newstage 2> "${SOURCEPDFS}/newstage.errlog")
 pnameit $(info "Result:") $(emph "${stagingdir}" )
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "2- Set up the stage with article information")
 pnameit $(code setstage -s "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}")
 
 pushd ${SOURCEDIR} >/dev/null
-setresult=$(setstage "-s" "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}" 2> "${SOURCEPDFS}/setstage.errlog")
+if [[ -n "${FRONTPAGE}" ]]; then
+    setresult=$(setstage "-s" "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}" "-f" "${FRONTPAGE}" 2> "${SOURCEPDFS}/setstage.errlog")
+else
+    setresult=$(setstage "-s" "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}" 2> "${SOURCEPDFS}/setstage.errlog")    
+fi
 popd >/dev/null
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "3- Render")
@@ -103,7 +123,7 @@ pnameit $(code  "/usr/bin/mv" "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTAR
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "5- Discard the staging area")
 pnameit $(code "rmtage \"${stagingdir}\"")
-#rmresult=$(rmstage "${stagingdir}")
+rmresult=$(rmstage "${stagingdir}")
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "To view use this:") $(emph xdg-open "${SOURCEPDFS}/${SOURCEDIRNAME}.pdf")
 pnameit 

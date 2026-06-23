@@ -20,10 +20,14 @@ BASHDIR="${HOME}/.rinohbox/bashsources"
 
 source  ${BASHDIR}/colorsource
 
-#
-# give arg1 a default valud: sampl-calp001-en.rst
-#
-TESTARTICLE=${1:-/home/ubuntu/.rinohbox/benchrst/default-that-wont-work-xx.rst}
+# Make sure we get the argument we derive it all from
+TESTARTICLE=${1:-}
+if [[ -z "${TESTARTICLE}" ]]; then
+    pnameit $(warn "Usage: ${MYPNAME} <pathto-article-??.rst>") 
+    exit 1
+fi
+
+#TESTARTICLE=${1:-/home/ubuntu/.rinohbox/benchrst/default-that-wont-work-xx.rst}
 TESTARTICLENAME=$(basename ${TESTARTICLE})
 TESTARTICLENAMENOEXT=${TESTARTICLENAME%.rst}
 if [[ "${TESTARTICLENAME}" == "${TESTARTICLENAMENOEXT}" ]] ; then
@@ -94,7 +98,7 @@ pnameit $(code  "/usr/bin/mv" "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTAR
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "5- Discard the staging area")
 pnameit $(code "rmtage \"${stagingdir}\"")
-#rmresult=$(rmstage "${stagingdir}")
+rmresult=$(rmstage "${stagingdir}")
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "To view use this:") $(emph xdg-open "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf")
 pnameit 
