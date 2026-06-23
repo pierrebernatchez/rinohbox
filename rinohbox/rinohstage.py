@@ -233,6 +233,9 @@ def setstage():
     """
     curdir = Path('.').resolve()
     curbase = os.path.basename(curdir)
+    my_media = curdir.parent / f"{curbase}-media"
+    my_media.resolve()
+    dflt_media = f"{my_media}"
     parser = argparse.ArgumentParser()
     parser.add_argument('rstfiles', nargs='*', help='RST files to process.')
     parser.add_argument('-s', '--stagingpath', dest="stagingpath", required=True,
