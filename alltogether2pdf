@@ -27,9 +27,7 @@ BASHDIR="${HOME}/.rinohbox/bashsources"
 source  ${BASHDIR}/colorsource
 
 #
-# give arg1 a default valud: sampl-calp001-en.rst
-#
-# Make sure we get the argument we derive it all from
+# Make sure we get the argument that we derive it all from
 TESTARTICLE=${1:-}
 if [[ -z "${TESTARTICLE}" ]]; then
     pnameit $(warn "Usage: ${MYPNAME} <pathto-article-??.rst>  [<pathto-frontpage-??.rst>]") 
@@ -77,7 +75,6 @@ SOURCEDIRNAME=$(basename ${SOURCEDIR})
 SOURCEBASE=$(dirname ${SOURCEDIR})
 SOURCEMEDIA="${SOURCEBASE}/${SOURCEDIRNAME}-media"
 SOURCEPDFS="${SOURCEBASE}/${SOURCEDIRNAME}-pdfs"
-SOURCEFRONTPAGE="${SOURCEDIR}/pdffrontpage-en.rst"
 # pushd ${BENCHDIR} >/dev/null
 pnameit $(info "#####################################################################")
 pnameit $(info "${MYPNAME}") ----  $(date "--rfc-3339=seconds")
@@ -91,7 +88,6 @@ pnameit $(info "TESTARTICLANAMENOEXT=${TESTARTICLENAMENOEXT}")
 pnameit $(info "SOURCEDIR=${SOURCEDIR}")
 pnameit $(info "SOURCEMEDIA=${SOURCEMEDIA}")
 pnameit $(info "SOURCEPDFS=${SOURCEPDFS}")
-pnameit $(info "SOURCEFRONTPAGE=${SOURCEFRONTPAGE}")
 pnameit $(info "SOURCEDIR=${SOURCEDIR}")
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "1- Create and initialize a staging directory")
@@ -123,7 +119,7 @@ pnameit $(code  "/usr/bin/mv" "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTAR
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "5- Discard the staging area")
 pnameit $(code "rmtage \"${stagingdir}\"")
-rmresult=$(rmstage "${stagingdir}")
+rmresult=$(rmstage "${stagingdir}" 2> "${SOURCEPDFS}/rmstage.errlog")
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "To view use this:") $(emph xdg-open "${SOURCEPDFS}/${SOURCEDIRNAME}.pdf")
 pnameit 

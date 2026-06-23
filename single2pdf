@@ -58,7 +58,6 @@ SOURCEDIRNAME=$(basename ${SOURCEDIR})
 SOURCEBASE=$(dirname ${SOURCEDIR})
 SOURCEMEDIA="${SOURCEBASE}/${SOURCEDIRNAME}-media"
 SOURCEPDFS="${SOURCEBASE}/${SOURCEDIRNAME}-pdfs"
-SOURCEFRONTPAGE="${SOURCEDIR}/pdffrontpage-en.rst"
 # pushd ${BENCHDIR} >/dev/null
 pnameit $(info "#####################################################################")
 pnameit $(info "${MYPNAME}") ----  $(date "--rfc-3339=seconds")
@@ -72,12 +71,11 @@ pnameit $(info "TESTARTICLANAMENOEXT=${TESTARTICLENAMENOEXT}")
 pnameit $(info "SOURCEDIR=${SOURCEDIR}")
 pnameit $(info "SOURCEMEDIA=${SOURCEMEDIA}")
 pnameit $(info "SOURCEPDFS=${SOURCEPDFS}")
-pnameit $(info "SOURCEFRONTPAGE=${SOURCEFRONTPAGE}")
 pnameit $(info "SOURCEDIR=${SOURCEDIR}")
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "1- Create and initialize a staging directory")
 pnameit $(code "newstage" )
-stagingdir=$(newstage)
+stagingdir=$(newstage 2> "${SOURCEPDFS}/newstage.errlog")
 pnameit $(info "Result:") $(emph "${stagingdir}" )
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "2- Set up the stage with article information")
@@ -98,7 +96,7 @@ pnameit $(code  "/usr/bin/mv" "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTAR
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "5- Discard the staging area")
 pnameit $(code "rmtage \"${stagingdir}\"")
-rmresult=$(rmstage "${stagingdir}")
+rmresult=$(rmstage "${stagingdir}" 2> "${SOURCEPDFS}/rmstage.errlog")
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "To view use this:") $(emph xdg-open "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf")
 pnameit 
