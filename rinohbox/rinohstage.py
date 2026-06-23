@@ -239,7 +239,7 @@ def setstage():
     parser = argparse.ArgumentParser()
     parser.add_argument('rstfiles', nargs='*', help='RST files to process.')
     parser.add_argument('-s', '--stagingpath', dest="stagingpath", required=True,
-                        help=f'staging directory to use (as returned by newrstage).')
+                        help=f'staging directory to use (as returned by newstage).')
     parser.add_argument('-l', '--lang', choices=["en","fr","es"], default="en",
                         help=f'language specific .rst files to glob for  (default en).')
     parser.add_argument('-m', '--media', default=dflt_media, dest="media",
