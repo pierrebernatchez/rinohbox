@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
 set -euo pipefail
+shopt -s nullglob # have nothing rather than glob string on no match globs
 #
 # bash trick to obtain a clean absolute path to this script.
 #
@@ -8,16 +9,14 @@ pushd `dirname $0` >/dev/null
 SCRIPTPATH=`pwd -P`
 popd >/dev/null
 MYPNAME=`basename ${0}`
-
 # 
 ##
-## This script Sets up a rendering stage for a single article (no title page).
-## Then it renders it.
-## Then is saves the output file to a pdfs directory
-## Then ii clears the stage and repeats until all articles have been done.
+##
+## This script Sets up a rendering stages for a single article.  It
+## renders and saves the .pdf and repeats for each article like it in
+## the same directory.
 ##
 #
-
 BASHDIR="${HOME}/.rinohbox/bashsources"
 
 source  ${BASHDIR}/colorsource
@@ -25,11 +24,10 @@ source  ${BASHDIR}/colorsource
 # Make sure we get the argument we derive it all from
 TESTARTICLE=${1:-}
 if [[ -z "${TESTARTICLE}" ]]; then
-    pnameit $(warn "Usage: ${MYPNAME} <pathto-article-??.rst>") 
+    pnameit $(warn "Usage: ${MYPNAME} pathto-article-en.rst") 
     exit 1
 fi
 
-#TESTARTICLE=${1:-/home/ubuntu/.rinohbox/benchrst/default-that-wont-work-xx.rst}
 TESTARTICLENAME=$(basename ${TESTARTICLE})
 TESTARTICLENAMENOEXT=${TESTARTICLENAME%.rst}
 if [[ "${TESTARTICLENAME}" == "${TESTARTICLENAMENOEXT}" ]] ; then
@@ -48,6 +46,7 @@ fi
 # Need to make test article into a full path name
 # derive everything else form that full path name
 # all our directories are dricven by where testarticle is
+
 SOURCEDIR=$(dirname ${TESTARTICLE})
 # Normalize it to full path
 pushd ${SOURCEDIR} >/dev/null
@@ -58,45 +57,50 @@ SOURCEDIRNAME=$(basename ${SOURCEDIR})
 SOURCEBASE=$(dirname ${SOURCEDIR})
 SOURCEMEDIA="${SOURCEBASE}/${SOURCEDIRNAME}-media"
 SOURCEPDFS="${SOURCEBASE}/${SOURCEDIRNAME}-pdfs"
-# pushd ${BENCHDIR} >/dev/null
+#
 pnameit $(info "#####################################################################")
 pnameit $(info "${MYPNAME}") ----  $(date "--rfc-3339=seconds")
 pnameit $(info "---------------------------------------------------------------------")
-pnameit $(info "This script Sets up a rendering stage for one single article file.")
-pnameit $(info "Then renders it.")
-pnameit $(info "Then saves the pdf file in")  $(emph "${SOURCEPDFS}")
+pnameit $(info "This script Sets up a rendering stage for a single article.")
+pnameit $(info "It renders and saves the output.pdf and repeats for each other")
+pnameit $(info "article like it in the same directory.")
 pnameit $(info "---------------------------------------------------------------------")
-pnameit $(info "TESTARTICLE=${TESTARTICLE}")
-pnameit $(info "TESTARTICLANAMENOEXT=${TESTARTICLENAMENOEXT}")
-pnameit $(info "SOURCEDIR=${SOURCEDIR}")
-pnameit $(info "SOURCEMEDIA=${SOURCEMEDIA}")
-pnameit $(info "SOURCEPDFS=${SOURCEPDFS}")
-pnameit $(info "SOURCEDIR=${SOURCEDIR}")
+pnameit $(info "Article Argument=${TESTARTICLE}")
+pnameit $(info "Same Directory=${SOURCEDIR}")
+pnameit $(info "Media directory=${SOURCEMEDIA}")
+pnameit $(info "Pdfs directory=${SOURCEPDFS}")
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "1- Create and initialize a staging directory")
 pnameit $(code "newstage" )
-stagingdir=$(newstage)
+stagingdir=$(newstage 2> "${SOURCEPDFS}/newstage.errlog")
 pnameit $(info "Result:") $(emph "${stagingdir}" )
-pnameit $(info "---------------------------------------------------------------------")
-pnameit $(info "2- Set up the stage with article information")
-pnameit $(code setstage -s "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}" "${TESTARTICLE}")
+OUTPDF="${stagingdir}/output/output.pdf"
+do_eacharticle () {
+    # - set stage
+    # - render
+    # - save result
+    # - clear stage
+    local currentpath
+    # echo -e "" > "${SOURCEPDFS}/setstage.errlog"
+    # echo -e "" > "${SOURCEPDFS}/sphinx-build.errlog"
+    while [[ $# -gt 0 ]]; do
+	myname="${1##*/}"
+	mynamenoext=${myname%.rst}
+	mypdfname="${mynamenoext}.pdf"
+	pnameit $(code setstage -s "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}" "${1}")
+	setresult=$(setstage "-s" "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}" "${1}" 2>> "${SOURCEPDFS}/setstage.errlog")
+	pnameit $(code "sphinx-build" "-b" "rinoh" "${stagingdir}/source" "${stagingdir}/output")
+	renderresult=$(sphinx-build -b rinoh "${stagingdir}/source" "${stagingdir}/output"  2>> "${SOURCEPDFS}/sphinx-build.errlog")
+	pnameit $(code "mv"  "${OUTPDF}" "${SOURCEPDFS}/${mypdfname}")
+	ignoreme=$(/usr/bin/mv  "${OUTPDF}" "${SOURCEPDFS}/${mypdfname}" )
+	clearresult=$(clearstage "${stagingdir}")
+	pnameit $(info "cleared ${clearresult}" )
+	shift
+    done
+}
 
-setresult=$(setstage "-s" "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}" "${TESTARTICLE}" 2> "${SOURCEPDFS}/setstage.errlog")
-pnameit $(info "---------------------------------------------------------------------")
-pnameit $(info "3- Render")
-pnameit $(info "---------------------------------------------------------------------")
-pnameit $(code "sphinx-build" "-b" "rinoh" "${stagingdir}/source" "${stagingdir}/output")
-renderresult=$(sphinx-build -b rinoh "${stagingdir}/source" "${stagingdir}/output"  2> "${SOURCEPDFS}/sphinx-build.errlog")
-pnameit $(info "4- Preserve the result")
-pnameit $(code ln -f -t "${SOURCEPDFS}" "${stagingdir}"'/output/*' )
-ingorethis=$(ln -f -t "${SOURCEPDFS}" ${stagingdir}/output/*)
-pnameit $(code ln -f "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf" )
-pnameit $(code  "/usr/bin/mv" "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf")
-/usr/bin/mv "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf"	  
-pnameit $(info "---------------------------------------------------------------------")
-pnameit $(info "5- Discard the staging area")
-pnameit $(code "rmtage \"${stagingdir}\"")
-rmresult=$(rmstage "${stagingdir}" 2> "${SOURCEPDFS}/rmstage.errlog")
-pnameit $(info "---------------------------------------------------------------------")
-pnameit $(info "To view use this:") $(emph xdg-open "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf")
-pnameit 
+do_eacharticle ${SOURCEDIR}/*${TESTARTICLENAME: -7} 
+
+
+
+

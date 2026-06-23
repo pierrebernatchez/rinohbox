@@ -23,7 +23,7 @@ source  ${BASHDIR}/colorsource
 # Make sure we get the argument we derive it all from
 TESTARTICLE=${1:-}
 if [[ -z "${TESTARTICLE}" ]]; then
-    pnameit $(warn "Usage: ${MYPNAME} <pathto-article-??.rst>") 
+    pnameit $(warn "Usage: ${MYPNAME} pathto-article-en.rst") 
     exit 1
 fi
 
@@ -58,7 +58,7 @@ SOURCEDIRNAME=$(basename ${SOURCEDIR})
 SOURCEBASE=$(dirname ${SOURCEDIR})
 SOURCEMEDIA="${SOURCEBASE}/${SOURCEDIRNAME}-media"
 SOURCEPDFS="${SOURCEBASE}/${SOURCEDIRNAME}-pdfs"
-# pushd ${BENCHDIR} >/dev/null
+#
 pnameit $(info "#####################################################################")
 pnameit $(info "${MYPNAME}") ----  $(date "--rfc-3339=seconds")
 pnameit $(info "---------------------------------------------------------------------")
