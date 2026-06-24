@@ -115,11 +115,11 @@ pnameit $(code ln -f -t "${SOURCEPDFS}" "${stagingdir}"'/output/*' )
 ingorethis=$(ln -f -t "${SOURCEPDFS}" ${stagingdir}/output/*)
 pnameit $(code ln -f "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf" )
 pnameit $(code  "/usr/bin/mv" "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf")
-/usr/bin/mv "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${SOURCEDIRNAME}.pdf"	  
+/usr/bin/mv "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${SOURCEDIRNAME}-${TESTLANG}.pdf"	  
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "5- Discard the staging area")
 pnameit $(code "rmtage \"${stagingdir}\"")
 rmresult=$(rmstage "${stagingdir}" 2> "${SOURCEPDFS}/rmstage.errlog")
 pnameit $(info "---------------------------------------------------------------------")
-pnameit $(info "To view use this:") $(emph xdg-open "${SOURCEPDFS}/${SOURCEDIRNAME}.pdf")
+pnameit $(info "To view use this:") $(emph "xdg-open" "${SOURCEPDFS}/${SOURCEDIRNAME}-${TESTLANG}.pdf")
 pnameit 

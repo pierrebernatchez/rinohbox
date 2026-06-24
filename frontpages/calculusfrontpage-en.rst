@@ -12,9 +12,20 @@ Learnmath Calculus
  
 .. footer:: Copyright © 2026 Pierre Bernatchez—All rights reserved.
 	    
-.. image:: ../images/testlogo.png
-   :width: 12cm
-   :align: center
-
 Some Calculus Problems in the collection
 ==========================================
+
+Your front page could easily have a logo with something like this.
+But since front pages are not maintained in the same place as the
+articles.  It is a little tricky figuring out where to maintain
+media files.  You would need it the same place as all the other
+media files for the given articles.  
+	    
+.. code-block:: rst
+
+   .. image:: ../images/testlogo.png
+      :width: 12cm
+      :align: center
+
+This document contains all our calculus problems in a single place.
+
