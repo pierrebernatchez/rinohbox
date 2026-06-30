@@ -30,7 +30,7 @@ source  ${BASHDIR}/colorsource
 # Make sure we get the argument that we derive it all from
 TESTARTICLE=${1:-}
 if [[ -z "${TESTARTICLE}" ]]; then
-    pnameit $(warn "Usage: ${MYPNAME} pathto-article-en.rst>  [<pathto-frontpage-en.rst>]") 
+    pnameit $(warn "Usage: ${MYPNAME} <pathto-article-en.rst>  [<pathto-frontpage-en.rst>]") 
     exit 1
 fi
 #
