@@ -48,20 +48,10 @@ if contains ${TESTLANG} "en" "fr" "es" ; then
 else
     pnameit $(warn "Abort : no trailing '-en.rst', '-fr.rst', or '-es.rst': ${TESTARTICLENAME}")
     exit 1
-fi    
-FRONTPAGE=${2:-}   # empty if not provided
-ARTICLESUFFIX="${TESTARTICLE: -7}"
-FRONTPAGESUFFIX="${FRONTPAGE: -7}"
-if [[ -n "${FRONTPAGE}" ]]; then
-    if [[ "${ARTICLESUFFIX}" != "${FRONTPAGESUFFIX}" ]]; then
-	pnameit $(warn "front page suffix does not match article suffix: ${ARTICLESUFFIX}")
-	exit 1
-    else
-	pnameit $(info "Rendering with front page: ${FRONTPAGE}")
-    fi
-else
-    pnameit $(info "Rendering with no front page.")
 fi
+
+# ARTICLESUFFIX="${TESTARTICLE: -7}"  how you get the last 7 characters of a file path
+
 # Need to make test article into a full path name
 # derive everything else form that full path name
 # all our directories are dricven by where testarticle is
@@ -75,6 +65,22 @@ SOURCEDIRNAME=$(basename ${SOURCEDIR})
 SOURCEBASE=$(dirname ${SOURCEDIR})
 SOURCEMEDIA="${SOURCEBASE}/${SOURCEDIRNAME}-media"
 SOURCEPDFS="${SOURCEBASE}/${SOURCEDIRNAME}-pdfs"
+
+###
+### We no longer take frontpage as an argument.
+### We use a namning convention.
+### Frontpages are named: <SOURCEDIRNAME>frontpage-<TESTLANG>.rst"
+### They must be stored in the directory: <SOURCEBASE>/frontpages/
+### So if one exists and is readable we use it otherwise we use none.
+###
+FRONTPAGENAME="${SOURCEDIRNAME}frontpage-${TESTLANG}.rst"
+FRONTPAGEFULLNAME="${SOURCEBASE}/frontpages/${FRONTPAGENAME}"
+if [[ -r "${FRONTPAGEFULLNAME}" ]]; then
+    pnameit $(info "Rendering with front page: ${FRONTPAGENAME}")
+else
+    pnameit $(info "Rendering with no front page.")
+fi
+
 # pushd ${BENCHDIR} >/dev/null
 pnameit $(info "#####################################################################")
 pnameit $(info "${MYPNAME}") ----  $(date "--rfc-3339=seconds")
@@ -96,14 +102,19 @@ stagingdir=$(newstage 2> "${SOURCEPDFS}/newstage.errlog")
 pnameit $(info "Result:") $(emph "${stagingdir}" )
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "2- Set up the stage with article information")
-pnameit $(code setstage -s "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}")
 
 pushd ${SOURCEDIR} >/dev/null
-if [[ -n "${FRONTPAGE}" ]]; then
-    setresult=$(setstage "-s" "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}" "-f" "${FRONTPAGE}" 2> "${SOURCEPDFS}/setstage.errlog")
+
+if [[ -r "${FRONTPAGEFULLNAME}" ]]; then
+    pnameit $(info "Using front page: ${FRONTPAGENAME}")
+    pnameit $(code setstage -s "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}"  "-f" "${FRONTPAGEFULLNAME}")
+    setresult=$(setstage "-s" "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}" "-f" "${FRONTPAGEFULLNAME}" 2> "${SOURCEPDFS}/setstage.errlog")
 else
+    pnameit $(info "Using no front page.")
+    pnameit $(code setstage -s "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}")
     setresult=$(setstage "-s" "${stagingdir}" "-l" "${TESTLANG}" "-m" "${SOURCEMEDIA}" 2> "${SOURCEPDFS}/setstage.errlog")    
 fi
+ 
 popd >/dev/null
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "3- Render")

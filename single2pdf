@@ -90,12 +90,11 @@ renderresult=$(sphinx-build -b rinoh "${stagingdir}/source" "${stagingdir}/outpu
 pnameit $(info "4- Preserve the result")
 pnameit $(code ln -f -t "${SOURCEPDFS}" "${stagingdir}"'/output/*' )
 ingorethis=$(ln -f -t "${SOURCEPDFS}" ${stagingdir}/output/*)
-pnameit $(code ln -f "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf" )
 pnameit $(code  "/usr/bin/mv" "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf")
 /usr/bin/mv "${SOURCEPDFS}/output.pdf" "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf"	  
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "5- Discard the staging area")
-pnameit $(code "rmtage \"${stagingdir}\"")
+pnameit $(code "rmstage \"${stagingdir}\"")
 rmresult=$(rmstage "${stagingdir}" 2> "${SOURCEPDFS}/rmstage.errlog")
 pnameit $(info "---------------------------------------------------------------------")
 pnameit $(info "To view use this:") $(emph xdg-open "${SOURCEPDFS}/${TESTARTICLENAMENOEXT}.pdf")
