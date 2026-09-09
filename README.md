@@ -1,13 +1,14 @@
+% Project README
 
-Project README
-==============
 
 A package to encapsulate a costomized pipeline for rendering .rst files into .pdf files
 using RINOH and Sphinx and docutils AND pelican as infrastrucure elements.
 
 ## Explanation
 
-These are the basic activities we want to support with this rinoh rendering pipeline.
+
+
+These are the basic activities we want to support with this rinoh rendering pipeline[^1].
 
 1. Render each .rst file in a directory into a corresponging individual .pdf document.
 2. Render all .rst files in a directory into a single comprehensive .pdf document for the directory.
@@ -21,29 +22,38 @@ number of .rst files to be rendered.  that directory needs to be set
 up with a few items in it that the program expects to find. I have
 taken to calling this a staging directory or simply a stage.
 
+<div style="page-break-after: always;"></div>
+
 The process of rendering a list of one or more .rst files consists of
 
 1. creating and initializing a tempory stage directory.
    Note the stage directory looks like this:
+
+   ```  
    stage/
-   ├── images
-   ├── output
-   └── source
-      ├── conf.py
-      ├── rinoh_article_template.py
-      ├── _static
-      └── _templates
+        ├── images/  
+        ├── output/  
+        └── source/
+            ├── conf.py  
+            ├── rinoh_article_template.py  
+            ├── _static/  
+            └── _templates/
+
 
    6 directories, 2 files
+    
+   ```   
 
 2. Setting the stage: Populating the stage with content.  Generating an index.rst file
    while transferring .rst files to the stage source/ directory.  Then putting
-   index.rst in source/ too.  The transferring process filters out
-   metadata from the input .rst files.  It also adds a '.. pagegreak::' directives to
-   the end of each of those .rst file.
+   index.rst in source/ too.
+
+   The transferring process filters out metadata from the input .rst files.
+   
+   It also adds a '.. pagegreak::' directives to the end of each of those .rst files.
 
    We also populate the images/ directory with media (.jpg, .png, ...) files used by
-   those .rst files.
+   te .rst files.
 
 3. Invoking "sphinx-build -b rinoh" using the stage for its source and output directories.
    E.G. "sphinx-build -b rinoh /tmp/rinohbxxxxx/source /tmp/rinohbxxxxx/output" 
@@ -90,4 +100,10 @@ The process of rendering a list of one or more .rst files consists of
   alltogether2pdf renders all .rst files matching the given .rst file into a single .pdf file.
   allapart2pdf    renders all .rst files matching the given .rst file into separate .pdf files.
 
+
+[^1]: We intend to publish all our documents in 3 languages (english, french, and spanish)  
+      So keep in mind when we refer to .rst files in this document we are really intending
+      to refer to either -en.rst, -fr.rst, or -es.rst files.
+      
+      
 

@@ -160,14 +160,18 @@ def saferemovestage():
         print(f"Invalid rinoh staging directory: {tmpstagingdirr}")
         exit(1)
 
-
+HEADER_WINDOW=40
 def copy_no_meta(src, dst, pagebreak=None):
     """copies the file contents but skips lines with metadata"""
     # pagebreak is an optional pagebreak directive line to be appended
     with open(src) as fin, open(dst, 'w') as fout:
+        hcounter = 0
         for line in fin:
-            if not re.match(r'^:.*:', line): # the ^ is unnecessary in this context, but does not hurt
-                fout.write(line)
+            if hcounter < HEADER_WINDOW :
+                hcounter = hcounter + 1
+            if hcounter < HEADER_WINDOW and re.match(r'^:\S+:', line):
+                continue  # drop this metadata field line
+            fout.write(line)
         if pagebreak is not None:
             fout.write(pagebreak)
         # add a page break as the last line
