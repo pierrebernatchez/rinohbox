@@ -17,6 +17,7 @@ from rinoh.reference import Field, SectionFieldType, SECTION_TITLE
 from rinoh.stylesheets import sphinx_article, sphinx
 from rinoh.structure import HeadingStyle
 from rinoh.style import StyleSheet
+from rinoh.flowable import GroupedFlowablesStyle, GroupedFlowables
 
 
 class NoTOCContentsPartTemplate(ContentsPartTemplate):
@@ -54,6 +55,27 @@ _heading_level_1_overrides['number_format'] = None
 
 UNNUMBERED = StyleSheet('rst_editor_unnumbered', base=sphinx_article)
 UNNUMBERED['heading level 1'] = HeadingStyle(**_heading_level_1_overrides)
+
+# 'keeptogether group': the style rinohconf.py's Container.build_flowable
+# patch applies to a `.. container:: keeptogether` block. same_page="try
+# to keep all this group's flowables on one page, moving the whole group
+# to the next page rather than splitting it, if it doesn't fit" -- a
+# real rinoh capability (rinoh.flowable.GroupedFlowablesStyle) that had
+# no RST-level directive wired up to it before this.
+#
+# Two registrations are both required, and this took direct debugging
+# (temporary print-instrumentation of rinoh's own GroupedFlowables.render,
+# not guessing) to work out: setting UNNUMBERED['keeptogether group'] = ...
+# alone stores a VALUE under that name, but nothing tells rinoh's style
+# *matcher* (a separate registry from the stylesheet's own values) that a
+# flowable with .style == 'keeptogether group' should resolve to it --
+# without the matcher entry, get_style('same_page', ...) silently falls
+# through to the attribute's default (False) with no error. The matcher
+# entry is what rinoh's own built-in named groups (e.g. 'block quote',
+# 'example' -- see rinoh/stylesheets/matcher.py) all rely on via this
+# exact same GroupedFlowables.like(name) pattern.
+UNNUMBERED.matcher['keeptogether group'] = GroupedFlowables.like('keeptogether group')
+UNNUMBERED['keeptogether group'] = GroupedFlowablesStyle(same_page=True)
 
 
 def make_article():

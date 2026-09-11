@@ -74,6 +74,37 @@ def _patched_heading_prepare(self, container):
 Heading.prepare = _patched_heading_prepare
 
 
+# Design C: `.. container:: keeptogether` keeps its contents on a single
+# page (or moves the whole block to the next page if it doesn't fit),
+# instead of letting rinoh split it wherever the page boundary happens to
+# land. docutils' built-in "container" directive already tags its node
+# with whatever class name follows it; rinoh's own RST frontend
+# (Container.build_flowable, rinoh/frontend/rst/nodes.py) already
+# branches on specific class names ('literal-block-wrapper', 'out-of-
+# line') to build a different flowable type for each — this patch adds
+# one more branch the same way, so it stays consistent with how rinoh
+# itself already extends this method, without editing rinoh's own
+# installed package source (not ours to maintain) or the separate
+# rst_directives package (a different project's work in progress).
+# same_page (rinoh.flowable.GroupedFlowablesStyle) is a real, existing
+# rinoh capability ("keep all flowables on a single page, if possible")
+# that was simply never wired up to any RST-level directive before this.
+from rinoh.frontend.rst.nodes import Container
+import rinoh.flowable as rf
+
+_original_container_build_flowable = Container.build_flowable
+
+def _patched_container_build_flowable(self, style=None, **kwargs):
+    classes = self.get('classes')
+    if 'keeptogether' in classes:
+        return rf.StaticGroupedFlowables(self.children_flowables(),
+                                          style='keeptogether group',
+                                          **kwargs)
+    return _original_container_build_flowable(self, style, **kwargs)
+
+Container.build_flowable = _patched_container_build_flowable
+
+
 def extract_metadata(app, doctree):
     from docutils import nodes
 

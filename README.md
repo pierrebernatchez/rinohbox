@@ -1,12 +1,10 @@
 % Project README
 
 
-A package to encapsulate a costomized pipeline for rendering .rst files into .pdf files
+A package to encapsulate a customized pipeline for rendering .rst files into .pdf files
 using RINOH and Sphinx and docutils AND pelican as infrastrucure elements.
 
 ## Explanation
-
-
 
 These are the basic activities we want to support with this rinoh rendering pipeline[^1].
 
@@ -50,7 +48,7 @@ The process of rendering a list of one or more .rst files consists of
 
    The transferring process filters out metadata from the input .rst files.
    
-   It also adds a '.. pagegreak::' directives to the end of each of those .rst files.
+   It also may add a '.. pagegreak::' directives to the end of each of those .rst files.
 
    We also populate the images/ directory with media (.jpg, .png, ...) files used by
    te .rst files.
@@ -106,4 +104,40 @@ The process of rendering a list of one or more .rst files consists of
       to refer to either -en.rst, -fr.rst, or -es.rst files.
       
       
+## Keeping content together across a page break
+
+Added 2026-09-11: `.. container:: keeptogether` keeps a block of content
+on one page in the rendered PDF, moving the whole block to the next page
+rather than letting rinoh split it wherever the page boundary happens to
+fall — useful for a worked example, a figure-plus-caption, anything that
+reads badly cut in half.
+
+Usage — wrap the content you want kept together:
+
+```rst
+.. container:: keeptogether
+
+   **Example:** first line of a worked example.
+
+   More content that should stay with it.
+```
+
+Implementation: `rinohbox/rinohconf.py` patches rinoh's RST-frontend
+`Container.build_flowable` to recognize the `keeptogether` class (the
+same way rinoh's own frontend already branches on other class names
+there), building a `StaticGroupedFlowables` styled `'keeptogether
+group'`. `rinohbox/rinoh_article_template.py` registers that style with
+`same_page=True` — a real, pre-existing rinoh capability
+(`GroupedFlowablesStyle.same_page`) that had no RST-level directive
+wired up to it before this. No changes to rinoh's own installed package,
+and no dependency on the separate `rst_directives` package.
+
+Note both a matcher entry (`UNNUMBERED.matcher['keeptogether group'] =
+GroupedFlowables.like('keeptogether group')`) *and* a stylesheet value
+entry (`UNNUMBERED['keeptogether group'] = GroupedFlowablesStyle(...)`)
+are required — the value alone silently falls back to `same_page=False`
+with no error, since rinoh's style *matcher* (which name resolves to
+which flowable) is a separate registry from the stylesheet's own stored
+values.
+
 
