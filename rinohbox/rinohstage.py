@@ -20,6 +20,12 @@ PROGNAME=os.path.basename(__file__)
 
 SAFEPRIFIX="rinohb"
 SAFESUFFIX="dblchk"
+# this number is the number of lines at the beginning of each
+# .rst file where the lines ^:any:   are dropped, to  strip out attributes for pdf rendering.
+# Too high and you may be stripping such as :math: lines, too low and you leave lines like :summary: in.
+HEADER_WINDOW=22
+
+
 def preparestage(stagedir):
     """Create the subdirectories required by the rinoh-rendering staging
     subdirectory and transfer the .py files it needs there.
@@ -160,7 +166,6 @@ def saferemovestage():
         print(f"Invalid rinoh staging directory: {tmpstagingdirr}")
         exit(1)
 
-HEADER_WINDOW=40
 def copy_no_meta(src, dst, pagebreak=None):
     """copies the file contents but skips lines with metadata"""
     # pagebreak is an optional pagebreak directive line to be appended
