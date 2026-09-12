@@ -13,11 +13,15 @@ from rinoh.attribute import OverrideDefault, Var
 from rinoh.dimension import CM, PT
 from rinoh.templates.article import Article, ArticleBodyPageTemplate
 from rinoh.template import ContentsPartTemplate
-from rinoh.reference import Field, SectionFieldType, SECTION_TITLE
+from rinoh.reference import Field, SectionFieldType, SECTION_TITLE, PAGE_NUMBER
 from rinoh.stylesheets import sphinx_article, sphinx
 from rinoh.structure import HeadingStyle
 from rinoh.style import StyleSheet
 from rinoh.flowable import GroupedFlowablesStyle, GroupedFlowables
+from rinoh.paragraph import Paragraph, ParagraphStyle
+from rinoh.text import Tab
+from rinoh.math import Equation, DisplayEquation, EquationStyle
+from rinoh.color import RED
 
 
 class NoTOCContentsPartTemplate(ContentsPartTemplate):
@@ -77,6 +81,77 @@ UNNUMBERED['heading level 1'] = HeadingStyle(**_heading_level_1_overrides)
 UNNUMBERED.matcher['keeptogether group'] = GroupedFlowables.like('keeptogether group')
 UNNUMBERED['keeptogether group'] = GroupedFlowablesStyle(same_page=True)
 
+# 'keep with next': the style rinohconf.py's Paragraph.build_flowable
+# patch applies to a paragraph immediately preceded by `.. rst-class::
+# keepwithnext` (Sphinx's alias for docutils' built-in "class"
+# directive, tags just the one next element). keep_with_next=True is a
+# plain FlowableStyle attribute ("keep this flowable and the next on the
+# same page") -- narrower than 'keeptogether group' above: this only
+# pins one flowable to its immediate successor, for the common case of a
+# label (e.g. "a)", "Example 1:") left alone at the bottom of a page
+# while its content starts fresh on the next one.
+#
+# base='body' is required, not optional: ParagraphStyle's own base
+# defaults to None (no inheritance at all), so without it this style
+# would resolve every other attribute -- space above/below, font, indent
+# -- to the bare class default instead of matching an ordinary
+# paragraph. Confirmed by direct testing: omitting base collapsed the
+# spacing above the labeled paragraph to ~0, visibly crowding it against
+# the previous paragraph. 'body' is rinoh's own built-in name for a
+# plain, unstyled paragraph (rinoh/stylesheets/matcher.py:
+# matcher('body', Paragraph)) -- the same fallback every other ordinary
+# paragraph in the document already resolves to.
+UNNUMBERED.matcher['keep with next'] = Paragraph.like('keep with next')
+UNNUMBERED['keep with next'] = ParagraphStyle(base='body', keep_with_next=True)
+
+# 'solution equation': the style rinohconf.py's Math_Block/Math
+# build_flowable/build_styled_text patches apply to a `.. math:: :class:
+# solution` block (inline `:math:` role classing not wired up the same
+# way docutils roles don't carry an inline :class: option the way block
+# directives do -- block-level only for this spike). font_color is a
+# real, already-existing EquationStyle attribute (rinoh/math.py) -- rinoh
+# just never had anything set it to non-black before this. Two matcher
+# entries (one per node type) both resolve to the one style value --
+# ClassSelectors don't support `|` to combine into a single registration.
+# Both the inline and block cases end up as `Equation` instances (the
+# block case wraps one inside a DisplayEquation, but the *inner*
+# Equation is what actually needs the style -- see the
+# _RedDisplayEquation comment in rinohconf.py). The `.like(style_name)`
+# argument must match the literal string passed as `style=` when the
+# object is constructed -- ClassSelector.match checks `styled.style ==
+# self.style_name` -- these two strings not matching (a real bug hit
+# and fixed here) is why the first attempt silently rendered black.
+_solution_equation_style = EquationStyle(font_color=RED)
+UNNUMBERED.matcher['solution equation inline'] = Equation.like('solution equation inline')
+UNNUMBERED['solution equation inline'] = _solution_equation_style
+
+# The block case can't use a bare ClassSelector like the inline one above:
+# rinoh's own built-in 'math block equation' matcher (rinoh/stylesheets/
+# matcher.py) is a context/descendant selector chain --
+# `SelectorByName('math block paragraph') / ... / Equation` -- and
+# 'math block paragraph' is itself `'math block' / +Paragraph`, where
+# `+Paragraph` (Selector.__pos__ -> .pri(1)) is where that built-in rule's
+# Specificity.priority=1 actually comes from. Specificity compares
+# `priority` before every other field, so a plain `Equation.like(...)`
+# ClassSelector (priority always 0) can never win against it regardless of
+# style-name specificity, no matter how the two rules compare elsewhere.
+#
+# Reusing `SelectorByName('math block paragraph')` directly doesn't work
+# here: UNNUMBERED.matcher is its own fresh StyledMatcher (not the same
+# instance rinoh's built-in matcher.py populates), and StyledMatcher.
+# __setitem__ only registers a selector once every name it *references* is
+# already defined in that *same* matcher instance -- otherwise it's parked
+# in self._pending forever and never actually added. So instead the same
+# chain shape is built directly from the classes themselves (DisplayEquation
+# / +Paragraph / ... / Equation), sidestepping by-name lookup entirely.
+# This reproduces the built-in rule's priority=1, and the final
+# `Equation.like('solution equation block')` link then wins the tiebreak on
+# the very next Specificity field (style_match=1 vs. the built-in's 0).
+UNNUMBERED.matcher['solution equation block'] = (
+    DisplayEquation / +Paragraph / ... / Equation.like('solution equation block')
+)
+UNNUMBERED['solution equation block'] = _solution_equation_style
+
 
 def make_article():
 
@@ -94,7 +169,7 @@ def make_article():
             bottom_margin=2.0*CM,
             header_footer_distance=2*PT,
             header_text=Field(SECTION_TITLE(1)),
-            footer_text=Field(SECTION_FOOTER(1)),
+            footer_text=Field(SECTION_FOOTER(1)) + Tab() + Field(PAGE_NUMBER),
         )
         contents_page = ArticleBodyPageTemplate(base='page')
 

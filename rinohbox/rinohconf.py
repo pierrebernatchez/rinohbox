@@ -105,6 +105,146 @@ def _patched_container_build_flowable(self, style=None, **kwargs):
 Container.build_flowable = _patched_container_build_flowable
 
 
+# Design D: `.. rst-class:: keepwithnext` immediately before a paragraph
+# (Sphinx's own alias for docutils' built-in "class" directive -- tags
+# the SINGLE next element with the given class, no dependency on
+# rst_directives) glues that paragraph to whatever flowable comes right
+# after it, so a label like "a)" or "Example 1:" is never left alone at
+# the bottom of a page with its content starting fresh on the next one.
+# Narrower than Design C's keeptogether (which holds a whole block
+# together): this only pins one flowable to its immediate successor.
+# Same reasoning as Design C for why this is a patch here rather than a
+# rinoh/rst_directives change -- see that design's comment above.
+#
+# MUST use `rst-class`, not the bare docutils spelling `class`: Sphinx
+# loads the Python domain by default, and that domain claims the
+# unprefixed `class` directive name for documenting Python classes (a
+# `py:class` shortcut) -- confirmed by direct testing (a bare `..
+# class:: keepwithnext` silently rendered as a literal "class
+# keepwithnext" signature block instead of tagging the next paragraph,
+# with the pending-node class-transform never running at all). Sphinx
+# registers `rst-class` (sphinx/directives/other.py) as an alias to
+# docutils' original, unshadowed directive specifically to route around
+# this collision.
+from rinoh.frontend.rst.nodes import Paragraph as RSTParagraphNode
+from rinoh.paragraph import Paragraph as RinohParagraph
+
+_original_paragraph_build_flowable = RSTParagraphNode.build_flowable
+
+def _patched_paragraph_build_flowable(self):
+    classes = self.get('classes')
+    if 'keepwithnext' in classes:
+        return RinohParagraph(self.process_content(), style='keep with next')
+    return _original_paragraph_build_flowable(self)
+
+RSTParagraphNode.build_flowable = _patched_paragraph_build_flowable
+
+
+# Design E: `.. math:: :class: solution` SHOULD render in red -- SPIKE
+# for "added-to-make-it-a-solution content should be red" (see
+# project_solutions_red_text_convention memory). **STATUS: NOT YET
+# WORKING, root cause identified, needs more work than a spike covers.**
+#
+# Two real bugs were found and fixed getting this far:
+# 1. rinoh's own RST frontend (rinoh/frontend/rst/nodes.py:
+#    Math_Block.build_flowable, Math.build_flowable) hardcodes
+#    `rt.DisplayEquation(self.text)` / `rt.Equation(self.text)` with no
+#    style argument at all -- docutils' standard `:class:` option on a
+#    math directive is silently dropped, never reaching rinoh's
+#    Equation/DisplayEquation constructors. Fixed the same way Design
+#    C/D above do: check for a class docutils already parses for us, and
+#    pass a `style=` name through explicitly.
+# 2. `DisplayEquation.__init__` (rinoh/math.py) *also* hardcodes its
+#    inner `Equation(latex_equation, inline=False)` with no style
+#    argument -- a style passed to DisplayEquation itself only reaches
+#    the outer LabeledFlowable wrapper (no font_color attribute there),
+#    never the inner Equation that actually renders glyphs. Worked
+#    around via `_RedDisplayEquation` below, which bypasses
+#    DisplayEquation.__init__ entirely to construct the inner Equation
+#    with the right style directly.
+#
+# **The actual blocker, found via direct instrumentation of
+# `StyleSheet._get_value_lookup`/`Document.get_matches`:** even once the
+# custom Equation correctly carries `style='solution equation block'`
+# and a matching stylesheet entry with `font_color=RED` exists, rinoh's
+# *built-in* `'math block equation'` selector (rinoh/stylesheets/
+# matcher.py, a context/descendant selector chain via `SelectorByName(...)
+# / ... / Equation`) always wins the match, because rinoh's Specificity
+# tuple starts with a `priority` field, and context/descendant selectors
+# get `priority=1` unconditionally -- a plain `Equation.like(style_name)`
+# ClassSelector (what's used below) can only ever produce `priority=0`,
+# so it *always* loses regardless of how specific the style-name/class
+# match is on the later tuple positions. This is an architectural
+# precedence tier in rinoh's own selector system, not a typo to fix.
+# Confirmed via debug prints showing `Specificity(priority=1, ...,
+# klass=5)` beating `Specificity(priority=0, ..., style=1, klass=2)`
+# every time. **Next step for whoever picks this up:** construct a
+# context/descendant selector of the same shape as the built-in one
+# (rather than a bare `Equation.like(...)` ClassSelector) so the custom
+# rule also gets `priority=1`, letting the `style=1` tiebreak actually
+# decide it.
+#
+# The inline `Math.build_styled_text` patch below is additionally NOT
+# reachable via any known plain-RST syntax yet even once the above is
+# fixed: docutils' inline `:math:` role has no `:class:`-equivalent way
+# to tag individual instances the way a block directive's `:class:`
+# option does, so `self.get('classes')` on an inline math node is always
+# empty today. Wiring up a real "some of this inline math should be red"
+# case would need a genuinely new mechanism (e.g. a custom Sphinx role).
+from rinoh.frontend.rst.nodes import Math_Block, Math as RSTMathNode
+from rinoh.math import DisplayEquation, Equation, EquationLabel
+from rinoh.paragraph import Paragraph as RinohParagraphForMath
+from rinoh.text import Tab as MathTab
+
+
+class _RedDisplayEquation(DisplayEquation):
+    """DisplayEquation whose inner Equation gets a style, unlike the
+    base class. rinoh/math.py's DisplayEquation.__init__ hardcodes
+    `Equation(latex_equation, inline=False)` with no style argument --
+    a style passed to DisplayEquation itself only affects the outer
+    LabeledFlowable wrapper, which has no font_color attribute, so it's
+    silently inert for controlling the rendered glyph color (confirmed
+    by direct testing: the outer style was applied and had zero visual
+    effect). Subclassing (rather than duplicating the label/category
+    wiring by hand) keeps `category = 'equation'` and
+    `EquationLabel.referenceable` (-> self.parent) working, which a
+    bare `LabeledFlowable(...)` substitute does not (raises
+    AttributeError: 'LabeledFlowable' object has no attribute
+    'category' at render time).
+    """
+
+    def __init__(self, latex_equation, equation_style, **kwargs):
+        # Deliberately does NOT call super().__init__ -- that's exactly
+        # the code path being replaced. Goes straight to
+        # LabeledFlowable.__init__ (DisplayEquation's own parent).
+        paragraph = RinohParagraphForMath(
+            MathTab() + Equation(latex_equation, inline=False,
+                                  style=equation_style))
+        label = EquationLabel()
+        super(DisplayEquation, self).__init__(label, paragraph, **kwargs)
+
+
+_original_math_block_build_flowable = Math_Block.build_flowable
+
+def _patched_math_block_build_flowable(self):
+    classes = self.get('classes')
+    if 'solution' in classes:
+        return _RedDisplayEquation(self.text, 'solution equation block')
+    return _original_math_block_build_flowable(self)
+
+Math_Block.build_flowable = _patched_math_block_build_flowable
+
+_original_math_inline_build_styled_text = RSTMathNode.build_styled_text
+
+def _patched_math_inline_build_styled_text(self):
+    classes = self.get('classes')
+    if 'solution' in classes:
+        return Equation(self.text, style='solution equation inline')
+    return _original_math_inline_build_styled_text(self)
+
+RSTMathNode.build_styled_text = _patched_math_inline_build_styled_text
+
+
 def extract_metadata(app, doctree):
     from docutils import nodes
 
