@@ -20,6 +20,36 @@ source_suffix    = ".rst"
 master_doc       = "index"
 exclude_patterns = ["_build"]
 
+# Design F: defines the two custom roles the "added to make it a
+# solution should be red" convention relies on for non-block content --
+# see the Design E comment below for the block-level `.. math:: :class:
+# solution` half of this, and project_solutions_red_text_convention
+# memory for the full history. rst_prolog is prepended to every source
+# file Sphinx parses, so these roles don't need to be repeated per file.
+# - `sol`: a plain custom role (docutils' own generic-role mechanism,
+#   no base role), explicitly given `:class: solution` (its default
+#   without that option would be `classes=['sol']`, the role's own
+#   name, not 'solution' -- rinoh_article_template.py's 'solution text'
+#   matcher checks for 'solution' specifically, to share one class name
+#   with the block/inline math cases below). For non-math "added" text
+#   -- table-cell answers, bare numbers, short words ("Yes"/"Even").
+#   Use as `` :sol:`text` ``.
+# - `solmath`: a custom role *derived* from docutils' built-in `math`
+#   role (the `.. role:: name(base_role)` form) with `:class: solution`
+#   baked in. Plain `:math:` has no way to carry a `:class:` option, but
+#   a derived role's supplied options get merged into every call to the
+#   base role (docutils.parsers.rst.roles.CustomRole.__call__), so this
+#   reaches rinoh's inline Math node with `classes=['solution']` already
+#   set on it -- exactly what RSTMathNode.build_styled_text below checks
+#   for. Use as `` :solmath:`latex` `` instead of `` :math:`latex` ``
+#   for an inline (not block) math answer that should render red.
+rst_prolog = """
+.. role:: sol
+   :class: solution
+.. role:: solmath(math)
+   :class: solution
+"""
+
 html_theme = "alabaster"
 
 # Design B storage: each article's footer text, captured at doctree-read
@@ -140,12 +170,12 @@ def _patched_paragraph_build_flowable(self):
 RSTParagraphNode.build_flowable = _patched_paragraph_build_flowable
 
 
-# Design E: `.. math:: :class: solution` SHOULD render in red -- SPIKE
-# for "added-to-make-it-a-solution content should be red" (see
-# project_solutions_red_text_convention memory). **STATUS: NOT YET
-# WORKING, root cause identified, needs more work than a spike covers.**
+# Design E: `.. math:: :class: solution` renders in red -- for
+# "added-to-make-it-a-solution content should be red" (see
+# project_solutions_red_text_convention memory). **STATUS: WORKING**,
+# confirmed end-to-end via a rendered test file (2026-09-12).
 #
-# Two real bugs were found and fixed getting this far:
+# Two real bugs needed fixing to get this working:
 # 1. rinoh's own RST frontend (rinoh/frontend/rst/nodes.py:
 #    Math_Block.build_flowable, Math.build_flowable) hardcodes
 #    `rt.DisplayEquation(self.text)` / `rt.Equation(self.text)` with no
@@ -178,19 +208,21 @@ RSTParagraphNode.build_flowable = _patched_paragraph_build_flowable
 # precedence tier in rinoh's own selector system, not a typo to fix.
 # Confirmed via debug prints showing `Specificity(priority=1, ...,
 # klass=5)` beating `Specificity(priority=0, ..., style=1, klass=2)`
-# every time. **Next step for whoever picks this up:** construct a
-# context/descendant selector of the same shape as the built-in one
-# (rather than a bare `Equation.like(...)` ClassSelector) so the custom
-# rule also gets `priority=1`, letting the `style=1` tiebreak actually
-# decide it.
+# every time. **Fixed** by constructing a context/descendant selector of
+# the same shape as the built-in one (`DisplayEquation / +Paragraph /
+# ... / Equation.like(...)`, see 'solution equation block' in
+# rinoh_article_template.py) instead of a bare `Equation.like(...)`
+# ClassSelector, so the custom rule also gets `priority=1` and the
+# `style=1` tiebreak decides it.
 #
-# The inline `Math.build_styled_text` patch below is additionally NOT
-# reachable via any known plain-RST syntax yet even once the above is
-# fixed: docutils' inline `:math:` role has no `:class:`-equivalent way
-# to tag individual instances the way a block directive's `:class:`
-# option does, so `self.get('classes')` on an inline math node is always
-# empty today. Wiring up a real "some of this inline math should be red"
-# case would need a genuinely new mechanism (e.g. a custom Sphinx role).
+# The inline `Math.build_styled_text` patch below needs `classes` to
+# actually be non-empty on an inline math node to ever fire -- plain
+# `:math:` has no `:class:`-equivalent option, so by itself this patch
+# is inert. Design F above (rst_prolog's `solmath` role, derived from
+# `math` with `:class: solution` baked in) is what makes
+# `` :solmath:`latex` `` reach this patch with `classes=['solution']`
+# already set -- no Sphinx-role Python code needed after all, a plain
+# docutils role-derivation directive was enough.
 from rinoh.frontend.rst.nodes import Math_Block, Math as RSTMathNode
 from rinoh.math import DisplayEquation, Equation, EquationLabel
 from rinoh.paragraph import Paragraph as RinohParagraphForMath

@@ -19,7 +19,7 @@ from rinoh.structure import HeadingStyle
 from rinoh.style import StyleSheet
 from rinoh.flowable import GroupedFlowablesStyle, GroupedFlowables
 from rinoh.paragraph import Paragraph, ParagraphStyle
-from rinoh.text import Tab
+from rinoh.text import Tab, StyledText, TextStyle
 from rinoh.math import Equation, DisplayEquation, EquationStyle
 from rinoh.color import RED
 
@@ -121,8 +121,17 @@ UNNUMBERED['keep with next'] = ParagraphStyle(base='body', keep_with_next=True)
 # object is constructed -- ClassSelector.match checks `styled.style ==
 # self.style_name` -- these two strings not matching (a real bug hit
 # and fixed here) is why the first attempt silently rendered black.
+# `+Equation.like(...)` (not a bare `Equation.like(...)`) for the same
+# reason 'solution text'/'solution paragraph' below need it: a bare
+# ClassSelector's priority is always 0, and rinoh has other built-in
+# structural rules (e.g. 'table first column paragraph' -- discovered
+# the hard way, see the 'solution paragraph' comment below) that also
+# resolve at priority 0 but with a higher klass score, silently winning
+# over ours whenever an "added" answer happens to land in one of those
+# structural positions. `+` (Selector.__pos__ -> .pri(1)) guarantees our
+# rule outranks *any* priority-0 competitor regardless of klass.
 _solution_equation_style = EquationStyle(font_color=RED)
-UNNUMBERED.matcher['solution equation inline'] = Equation.like('solution equation inline')
+UNNUMBERED.matcher['solution equation inline'] = +Equation.like('solution equation inline')
 UNNUMBERED['solution equation inline'] = _solution_equation_style
 
 # The block case can't use a bare ClassSelector like the inline one above:
@@ -151,6 +160,62 @@ UNNUMBERED.matcher['solution equation block'] = (
     DisplayEquation / +Paragraph / ... / Equation.like('solution equation block')
 )
 UNNUMBERED['solution equation block'] = _solution_equation_style
+
+# 'solution text': red for plain (non-math) "added to make it a
+# solution" content -- table-cell answers, short words ("Yes"/"No"/
+# "Even"), bare numbers, etc. -- tagged via `` :sol:`...` `` (a plain
+# docutils custom role with no base role, defined once in rinohconf.py's
+# rst_prolog; see that file's Design F comment). Unlike Equation above,
+# this needs no rinohconf.py monkeypatch at all: rinoh's generic
+# DocutilsInlineNode.styled_text() (rinoh/frontend/rst/__init__.py)
+# already copies a node's docutils `classes` onto the resulting
+# StyledText's own `.classes` list for every node type that doesn't
+# override styled_text/build_flowable itself (unlike Math/Math_Block,
+# which is exactly why those two needed the Design E patch).
+#
+# `+StyledText.like(...)`, not bare: see the 'solution paragraph' comment
+# below for the exact bug this avoids (a same-priority, higher-klass
+# built-in rule silently winning for certain structural positions).
+UNNUMBERED.matcher['solution text'] = +StyledText.like(has_class='solution')
+UNNUMBERED['solution text'] = TextStyle(font_color=RED)
+
+# 'solution paragraph': whole-paragraph (or whole table-cell, which
+# docutils wraps in a paragraph the same way) version of the above, for
+# the common case where an ENTIRE answer -- not just one word or one
+# inline math fragment -- is "added" content, e.g. a full worked-answer
+# sentence in a list-table cell. `.. rst-class:: solution` immediately
+# before the paragraph (same directive Design D's 'keep with next'
+# uses) tags the whole thing at once, including any *plain* (unclassed)
+# `:math:` nested inside it -- no need to individually mark every word
+# with :sol: or switch every nested :math: to :solmath:. This relies on
+# StyledText/Equation.fallback_to_parent already returning True for
+# font_color (rinoh/text.py, rinoh/math.py): a child with no more
+# specific color match of its own climbs to its parent flowable (this
+# Paragraph) and re-resolves there, inheriting whatever font_color the
+# paragraph itself resolved to. base='body' is required for the same
+# reason 'keep with next' above needs it -- ParagraphStyle has no
+# default base, so omitting it would blank out ordinary paragraph
+# spacing/alignment, not just add color.
+#
+# **Real bug hit and fixed here:** a bare `Paragraph.like(has_class=
+# 'solution')` silently fails to turn red specifically for a paragraph
+# that's the FIRST cell in a list-table row -- found via a 2-cell test
+# table where the second cell worked and the first didn't, despite
+# identical RST. Root cause (confirmed via the same debug-print
+# technique used for the math priority-tier bug): rinoh has a built-in
+# 'table first column paragraph' style that also matches at
+# `Specificity(priority=0, ..., attributes=1, klass=8)` -- same
+# priority and attributes-match count as ours, but a higher klass score
+# (it's a context/descendant selector under the hood, like 'math block
+# equation' was), so it wins the tiebreak and is asked to resolve
+# font_color instead of ours -- and since IT doesn't set font_color
+# either, its own base chain resolves to the plain default (black)
+# *without* ever falling through to try our rule next. `+Paragraph...`
+# (priority=1) sidesteps this the same way Design E's block-math fix
+# did: our rule now outranks *any* priority-0 competitor regardless of
+# klass, not just this one specific built-in.
+UNNUMBERED.matcher['solution paragraph'] = +Paragraph.like(has_class='solution')
+UNNUMBERED['solution paragraph'] = ParagraphStyle(base='body', font_color=RED)
 
 
 def make_article():
