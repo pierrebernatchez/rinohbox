@@ -20,7 +20,7 @@ from rinoh.style import StyleSheet
 from rinoh.flowable import GroupedFlowablesStyle, GroupedFlowables
 from rinoh.paragraph import Paragraph, ParagraphStyle
 from rinoh.text import Tab, StyledText, TextStyle
-from rinoh.math import Equation, DisplayEquation, EquationStyle
+from rinoh.math import Equation, DisplayEquation, EquationStyle, EquationLabelStyle
 from rinoh.color import RED
 
 
@@ -59,6 +59,17 @@ _heading_level_1_overrides['number_format'] = None
 
 UNNUMBERED = StyleSheet('rst_editor_unnumbered', base=sphinx_article)
 UNNUMBERED['heading level 1'] = HeadingStyle(**_heading_level_1_overrides)
+
+# Same pattern as above, for displayed math: 'math block label' (defined
+# in the base 'sphinx' stylesheet) normally prints an auto-incrementing
+# "(1)", "(2)", ... beside every non-:nowrap: ".. math::" block. None of
+# this project's documents ever cross-reference one of these numbers in
+# body text, so they're pure visual noise -- disabled globally here
+# rather than editing every .rst file's math blocks individually.
+_math_block_label_overrides = dict(sphinx['math block label'])
+_math_block_label_overrides['number_format'] = None
+
+UNNUMBERED['math block label'] = EquationLabelStyle(**_math_block_label_overrides)
 
 # 'keeptogether group': the style rinohconf.py's Container.build_flowable
 # patch applies to a `.. container:: keeptogether` block. same_page="try
